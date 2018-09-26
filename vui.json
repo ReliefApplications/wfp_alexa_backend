@@ -1,0 +1,91 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "wfp asia pacific",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "GetIndicatorCountry",
+                    "slots": [
+                        {
+                            "name": "indcator",
+                            "type": "INDICATOR"
+                        },
+                        {
+                            "name": "wfpcountry",
+                            "type": "WFPCOUNTRY"
+                        }
+                    ],
+                    "samples": [
+                        "How many {indcator} do we have in {wfpcountry}",
+                        "give me the number of {indcator} in {wfpcountry}",
+                        "tell me how many {indcator} has in {wfpcountry}",
+                        "How many {indcator} has in {wfpcountry}",
+                        "How many {indcator} WFP serves in {wfpcountry}"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "INDICATOR",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "OUTPUTS"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "INDICATORS"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "BENEFICIARIES"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "WFPCOUNTRY",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "Bangladesh"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Pakistan"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Afghanistan"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
