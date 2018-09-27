@@ -4,6 +4,7 @@ let speechOutput;
 let reprompt;
 
 'use strict';
+const AWS = require('aws-sdk');
 const Alexa = require('alexa-sdk');
 
 const handlers = {
@@ -35,6 +36,25 @@ const handlers = {
 		    speechOutput = 'There is ' + content[indicatorSlotRaw][wfpcountrySlotRaw]  + ' ' + indicatorSlotRaw  + ' in ' + wfpcountrySlotRaw;
             this.emit(":ask", speechOutput);
 		}
+    },
+    'ShowDashboard': function () {
+        var docClient = new AWS.DynamoDB.DocumentClient();
+        let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
+        var params = {
+            TableName: "wfpDashboardProofOfWork",
+            Key:{
+                "countryId": 0,
+            },
+            UpdateExpression: "set countryToShow = :newCountryId",
+            ExpressionAttributeValues: {
+                ":newCountryId" : wfpcountrySlotRaw
+            }
+        };
+
+        speechOutput = 'Here is the ' + wfpcountrySlotRaw + ' dashboard.';
+        docClient.update(params, (() => {
+           this.emit(":ask", speechOutput);
+        }));
     },
     'GetNonCompliantIntent': function () {
             speechOutput = 'Don\'t push your luck. For this type of information WFP will need to upgrade its system';
