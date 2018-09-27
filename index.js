@@ -1,87 +1,65 @@
-/* eslint-disable  func-names */
-/* eslint quote-props: ["error", "consistent"]*/
-/**
- * This sample demonstrates a simple skill built with the Amazon Alexa Skills
- * nodejs skill development kit.
- * This sample supports multiple lauguages. (en-US, en-GB, de-DE).
- * The Intent Schema, Custom Slots and Sample Utterances for this skill, as well
- * as testing instructions are located at https://github.com/alexa/skill-sample-nodejs-fact
- **/
+let welcomeOutput = "Welcome to the World Food Programme dashboard ! What would you like to know about W F P ?";
+let welcomeReprompt = "You can ask a question like how many outputs WFP serves in Nepal ?";
+let speechOutput;
+let reprompt;
 
 'use strict';
 const Alexa = require('alexa-sdk');
 
-//=========================================================================================================================================
-//TODO: The items below this comment need your attention.
-//=========================================================================================================================================
-
-//Replace with your app ID (OPTIONAL).  You can find this value at the top of your skill's page on http://developer.amazon.com.
-//Make sure to enclose your value in quotes, like this: const APP_ID = 'amzn1.ask.skill.bb4045e6-b3e8-4133-b650-72923c5980f1';
-const APP_ID = undefined;
-
-const SKILL_NAME = 'Space Facts';
-const GET_FACT_MESSAGE = "Here's your fact: ";
-const HELP_MESSAGE = 'You can say tell me a space fact, or, you can say exit... What can I help you with?';
-const HELP_REPROMPT = 'What can I help you with?';
-const STOP_MESSAGE = 'Goodbye!';
-
-//=========================================================================================================================================
-//TODO: Replace this data with your own.  You can find translations of this data at http://github.com/alexa/skill-sample-node-js-fact/data
-//=========================================================================================================================================
-const data = [
-    'A year on Mercury is just 88 days long.',
-    'Despite being farther from the Sun, Venus experiences higher temperatures than Mercury.',
-    'Venus rotates counter-clockwise, possibly because of a collision in the past with an asteroid.',
-    'On Mars, the Sun appears about half the size as it does on Earth.',
-    'Earth is the only planet not named after a god.',
-    'Jupiter has the shortest day of all the planets.',
-    'The Milky Way galaxy will collide with the Andromeda Galaxy in about 5 billion years.',
-    'The Sun contains 99.86% of the mass in the Solar System.',
-    'The Sun is an almost perfect sphere.',
-    'A total solar eclipse can happen once every 1 to 2 years. This makes them a rare event.',
-    'Saturn radiates two and a half times more energy into space than it receives from the sun.',
-    'The temperature inside the Sun can reach 15 million degrees Celsius.',
-    'The Moon is moving approximately 3.8 cm away from our planet every year.',
-];
-
-//=========================================================================================================================================
-//Editing anything below this line might break your skill.
-//=========================================================================================================================================
-
 const handlers = {
     'LaunchRequest': function () {
-        this.emit('GetNewFactIntent');
+        //This is triggered when the user says: 'Open wfp asia pacific'
+        this.emit(':ask', welcomeOutput, welcomeReprompt)
     },
-    'GetNewFactIntent': function () {
-        const factArr = data;
-        const factIndex = Math.floor(Math.random() * factArr.length);
-        const randomFact = factArr[factIndex];
-        const speechOutput = GET_FACT_MESSAGE + randomFact;
+    'GetIndicatorCountry': function () {
+        //This is triggered when the user says: 'tell me how many {indicator} has in {wfpcountry}?'
 
-        this.response.cardRenderer(SKILL_NAME, randomFact);
-        this.response.speak(speechOutput);
-        this.emit(':responseReady');
+        const fs = require('fs');
+        let rawdata = fs.readFileSync('data.json');
+        let content = JSON.parse(rawdata);
+		let indicatorSlotRaw = this.event.request.intent.slots.indicator.value;
+		let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
+
+        // Check if the indicator exists
+		if (!content.hasOwnProperty(indicatorSlotRaw)){
+		    speechOutput = 'The ' + indicatorSlotRaw + ' indicator is not available yet';
+		    this.emit(":ask", speechOutput);
+		}
+        // Check if the country is a part of the project
+		else if (!content[indicatorSlotRaw].hasOwnProperty(wfpcountrySlotRaw)){
+		    speechOutput = 'The country ' + wfpcountrySlotRaw + ' is not yet part of WFP';
+		    this.emit(":ask", speechOutput);
+		}
+        // GIve the answer for the data required
+		else {
+		    speechOutput = 'There is ' + content[indicatorSlotRaw][wfpcountrySlotRaw]  + ' ' + indicatorSlotRaw  + ' in ' + wfpcountrySlotRaw;
+            this.emit(":ask", speechOutput);
+		}
+    },
+    'GetNonCompliantIntent': function () {
+            speechOutput = 'Don\'t push your luck. For this type of information WFP will need to upgrade its system';
+            this.emit(":ask", speechOutput);
     },
     'AMAZON.HelpIntent': function () {
-        const speechOutput = HELP_MESSAGE;
-        const reprompt = HELP_REPROMPT;
+        //This is triggered when the user says: 'Help'
+        speechOutput = 'Try to ask how many beneficiaries do we have in india';
+        this.emit(':tell', speechOutput);
 
-        this.response.speak(speechOutput).listen(reprompt);
-        this.emit(':responseReady');
     },
     'AMAZON.CancelIntent': function () {
-        this.response.speak(STOP_MESSAGE);
-        this.emit(':responseReady');
+        //This is triggered when the user says: 'Cancel'
+        speechOutput = 'OK, bye';
+        this.emit(':tell', speechOutput);
     },
     'AMAZON.StopIntent': function () {
-        this.response.speak(STOP_MESSAGE);
-        this.emit(':responseReady');
+        //This is triggered when the user says: 'Stop'
+        speechOutput = 'Thank you for using the WFP Dashboard';
+        this.emit(':tell', speechOutput);
     },
 };
 
 exports.handler = function (event, context, callback) {
     const alexa = Alexa.handler(event, context, callback);
-    alexa.APP_ID = APP_ID;
     alexa.registerHandlers(handlers);
     alexa.execute();
 };
