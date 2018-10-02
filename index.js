@@ -1,11 +1,12 @@
-let welcomeOutput = "Welcome to the World Food Programme dashboard ! What would you like to know about W F P ?";
+let welcomeOutput = "Welcome to the World Food Programme dashboard ! What would you like to know about WFP ?";
 let welcomeReprompt = "You can ask a question like how many outputs WFP serves in Nepal ?";
 let speechOutput;
 let reprompt;
+const jsonData = "https://s3-ap-northeast-1.amazonaws.com/wfp-alexa-demo/data.json";
 
 'use strict';
-const AWS = require('aws-sdk');
 const Alexa = require('alexa-sdk');
+var request = require('request');
 
 const handlers = {
     'LaunchRequest': function () {
@@ -37,24 +38,64 @@ const handlers = {
             this.emit(":ask", speechOutput);
 		}
     },
-    'ShowDashboard': function () {
-        var docClient = new AWS.DynamoDB.DocumentClient();
+    'ShowDashboard': async function () {
         let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
-        var params = {
-            TableName: "wfpDashboardProofOfWork",
-            Key:{
-                "countryId": 0,
-            },
-            UpdateExpression: "set countryToShow = :newCountryId",
-            ExpressionAttributeValues: {
-                ":newCountryId" : wfpcountrySlotRaw
-            }
-        };
+        let userId = this.event.session.user.userId;
+        let data = {}
+        data[userId] = wfpcountrySlotRaw;
+        let params = {
+              method: "put",
+              uri: jsonData,
+              body: data,
+              json: true,
+              headers: {'content-type': 'application/json'}
+          };
 
         speechOutput = 'Here is the ' + wfpcountrySlotRaw + ' dashboard.';
-        docClient.update(params, (() => {
-           this.emit(":ask", speechOutput);
-        }));
+        try {
+            await request(params, ((err, data) => {
+                if(err !== null){
+                  console.error("e", err);
+                }
+                else {
+                    console.log(data);
+                    this.emit(":ask", speechOutput);
+                }
+            }));
+        }
+        catch (e) {
+            speechOutput = "There was an issue while displaying the dashboard";
+            this.emit(":ask", speechOutput);
+        }
+    },
+    'ShowHomePage': async function () {
+        let userId = this.event.session.user.userId;
+        let data = {}
+        data[userId] = "home";
+        let params = {
+              method: "put",
+              uri: jsonData,
+              body: data,
+              json: true,
+              headers: {'content-type': 'application/json'}
+          };
+
+        speechOutput = 'Here you go';
+        try {
+            await request(params, ((err, data) => {
+                if(err !== null){
+                  console.error("e", err);
+                }
+                else {
+                    console.log(data);
+                    this.emit(":ask", speechOutput);
+                }
+            }));
+        }
+        catch (e) {
+            speechOutput = "There was an issue while displaying the dashboard";
+            this.emit(":ask", speechOutput);
+        }
     },
     'GetNonCompliantIntent': function () {
             speechOutput = 'Don\'t push your luck. For this type of information WFP will need to upgrade its system';
