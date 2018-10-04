@@ -4,6 +4,7 @@
     "private": true,
     "dependencies": {
         "alexa-sdk": "^1.0.25",
+        "babyparse": "^0.4.6",
         "request": "^2.88.0"
     }
 }
