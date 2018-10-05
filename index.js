@@ -35,41 +35,33 @@ const requestGSheet = function(filekey, callback) {
       });
 }
 
+const calculateSum = function(values, columnName) {
+    let result = 0;
+    values.forEach((val) => {
+        if (typeof val[columnName] === 'string') {
+            result += parseInt(val[columnName].replace(/\s/g, ''), 10);
+        }
+        else {
+            result += parseInt(val[columnName], 10);
+        }
+    });
+    return result;
+}
 const handlers = {
     'LaunchRequest': function () {
         //This is triggered when the user says: 'Open wfp asia pacific'
         this.emit(':ask', welcomeOutput, welcomeReprompt)
     },
-    'GetIndicatorCountry': function () {
-        //This is triggered when the user says: 'tell me how many {indicator} has in {wfpcountry}?'
-
-        const fs = require('fs');
-        let rawdata = fs.readFileSync('data.json');
-        let content = JSON.parse(rawdata);
-		let indicatorSlotRaw = this.event.request.intent.slots.indicator.value;
-		let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
-
-        // Check if the country is a part of the project
-		if (!content.hasOwnProperty(wfpcountrySlotRaw)){
-		    speechOutput = 'The country ' + wfpcountrySlotRaw + ' is not yet part of WFP';
-		    this.emit(":ask", speechOutput);
-		}
-        // Check if the indicator exists
-		else if (!content[wfpcountrySlotRaw].hasOwnProperty(indicatorSlotRaw)){
-		    speechOutput = 'The ' + indicatorSlotRaw + ' indicator is not available yet';
-		    this.emit(":ask", speechOutput);
-		}
-        // GIve the answer for the data required
-		else {
-		    speechOutput = 'There is ' + content[wfpcountrySlotRaw][indicatorSlotRaw]  + ' ' + indicatorSlotRaw  + ' in ' + wfpcountrySlotRaw;
-            this.emit(":ask", speechOutput);
-		}
-    },
     'ShowDashboard': async function () {
         let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
         let userId = this.event.session.user.userId;
         let data = {}
-        data[userId] = wfpcountrySlotRaw;
+        if (wfpcountrySlotRaw) {
+            data[userId] = wfpcountrySlotRaw;
+        }
+        else {
+            data[userId] = "home";
+        }
         let params = {
               method: "put",
               uri: jsonData,
@@ -95,39 +87,11 @@ const handlers = {
             this.emit(":ask", speechOutput);
         }
     },
-    'ShowHomePage': async function () {
-        let userId = this.event.session.user.userId;
-        let data = {}
-        data[userId] = "home";
-        let params = {
-              method: "put",
-              uri: jsonData,
-              body: data,
-              json: true,
-              headers: {'content-type': 'application/json'}
-          };
-
-        speechOutput = 'Here you go';
-        try {
-            await request(params, ((err, data) => {
-                if(err !== null){
-                  console.error("e", err);
-                }
-                else {
-                    console.log(data);
-                    this.emit(":ask", speechOutput);
-                }
-            }));
-        }
-        catch (e) {
-            speechOutput = "There was an issue while displaying the dashboard";
-            this.emit(":ask", speechOutput);
-        }
-    },
     'GetFoodnCashDistribution': async function () {
-		let unitSlotRaw = this.event.request.intent.slots.unit.value;
-		let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
-		let timeframeSlotRaw = this.event.request.intent.slots.timeframe.value;
+        // We go this deep to avoid checking for every synonyms in our functions and use the core value
+		let unitSlotRaw = this.event.request.intent.slots.unit.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+		let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+		let timeframeSlotRaw = this.event.request.intent.slots.timeframe.resolutions.resolutionsPerAuthority[0].values[0].value.name;
         speechOutput = "No data";
         try {
             await requestGSheet('1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ', (results) => {
@@ -153,7 +117,7 @@ const handlers = {
                             case 'usd':
                                 columnName="Planned CBT";
                                 break;
-                            case 'metric tons':
+                            case 'metric tons of food':
                                 columnName="Planned food";
                                 break;
                         }
@@ -161,10 +125,7 @@ const handlers = {
                         break;
                 }
                 let values = data.filter(row => row['Country'] === wfpcountrySlotRaw);
-                let displayedValue = 0;
-                values.forEach((val) => {
-                    displayedValue += parseInt(val[columnName].replace(/\s/g, ''), 10);
-                });
+                let displayedValue = calculateSum(values, columnName);
                 speechOutput = "The " + wfpcountrySlotRaw + middlePhrase + displayedValue + " " + unitSlotRaw + endPhrase;
                 this.emit(":ask", speechOutput);
             })
@@ -174,6 +135,7 @@ const handlers = {
         }
         catch (e) {
             speechOutput = "There was an issue whith the request about the food and cash distribution";
+            this.emit(":ask", speechOutput);
         }
     },
     'GetTransferData': async function () {
@@ -190,10 +152,7 @@ const handlers = {
                         break;
                 }
                 let values = data.filter(row => row['CO'] === wfpcountrySlotRaw);
-                let displayedValue = 0;
-                values.forEach((val) => {
-                    displayedValue += parseInt(val[columnName].replace(/\s/g, ''), 10);
-                });
+                let displayedValue = calculateSum(values, columnName);
                 speechOutput = "The amount of " + programTypeSlotRaw + " in " + wfpcountrySlotRaw + " is " + displayedValue + " USD.";
                 this.emit(":ask", speechOutput);
             })
@@ -238,10 +197,7 @@ const handlers = {
                         values = values.filter(row => row['Residence Status'] === columnName);
                     }
                 }
-                let displayedValue = 0;
-                values.forEach((val) => {
-                    displayedValue += parseInt(val['Number of beneficiaries'], 10);
-                });
+                let displayedValue = calculateSum(values, 'Number of beneficiaries');
                 speechOutput = "There is " + displayedValue + " " + residenceStatusSlotRaw + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '') ;
                 this.emit(":ask", speechOutput);
             })
@@ -297,10 +253,7 @@ const handlers = {
                         values = values.filter(row => row[headerName] === columnName);
                     }
                 }
-                let displayedValue = 0;
-                values.forEach((val) => {
-                    displayedValue += parseInt(val['Number of beneficiaries'], 10);
-                });
+                let displayedValue = calculateSum(values, 'Number of beneficiaries');
                 speechOutput = "There are " + displayedValue + " " + disaggregationDataSlotRaw + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '') ;
                 this.emit(":ask", speechOutput);
             })
@@ -313,33 +266,7 @@ const handlers = {
             speechOutput = "There was an issue whith the request about the transfer data.";
         }
     },
-    'GetCountryPrograms': async function () {
-        let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
-        speechOutput = "No data";
-        try {
-            await requestGSheet('1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ', (results) => {
-                let data = results.data;
-                let values = data;
-                values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
-                let displayedValue = [];
-                values.forEach((val) => {
-                    displayedValue.push(val['Project Type']);
-                    console.log("v", displayedValue);
-                });
-                console.log("vd", displayedValue.join());
-                speechOutput = "The program for " + wfpcountrySlotRaw + " are: " + displayedValue.join();
-                this.emit(":ask", speechOutput);
-            })
-            .catch((error) => {
-                console.error(error);
-                throw error;
-            });
-        }
-        catch (e) {
-            speechOutput = "There was an issue whith the request about the country program.";
-        }
-    },
-    'GetNonCompliantIntent': function () {
+    'AMAZON.FallbackIntent': function () {
             speechOutput = 'Don\'t push your luck. For this type of information WFP will need to upgrade its system';
             this.emit(":ask", speechOutput);
     },
