@@ -34,7 +34,6 @@ const requestGSheet = function(filekey, callback) {
           }));
       });
 }
-
 const calculateSum = function(values, columnName) {
     let result = 0;
     values.forEach((val) => {
@@ -47,6 +46,7 @@ const calculateSum = function(values, columnName) {
     });
     return result;
 }
+
 const handlers = {
     'LaunchRequest': function () {
         //This is triggered when the user says: 'Open wfp asia pacific'
@@ -139,8 +139,8 @@ const handlers = {
         }
     },
     'GetTransferData': async function () {
-		let programTypeSlotRaw = this.event.request.intent.slots.programType.value;
-		let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
+		let programTypeSlotRaw = this.event.request.intent.slots.programType.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+		let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.resolutions.resolutionsPerAuthority[0].values[0].value.name;
         speechOutput = "No data";
         try {
             await requestGSheet('1Cvqf2nCLWCA5GWSochdk10HLtUQCx6TUVdOAbRi21Gg', (results) => {
@@ -162,21 +162,63 @@ const handlers = {
         }
         catch (e) {
             speechOutput = "There was an issue whith the request about the transfer data.";
+            this.emit(":ask", speechOutput);
         }
     },
     'GetBeneficiaries': async function () {
-        let residenceStatusSlotRaw = this.event.request.intent.slots.residenceStatus.value;
-        let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
+        let residenceStatusSlotRaw = this.event.request.intent.slots.residenceStatus.resolutions ?
+         this.event.request.intent.slots.residenceStatus.resolutions.resolutionsPerAuthority[0].values[0].value.name : undefined;
+        let disaggregationDataSlotRaw = this.event.request.intent.slots.disaggregationData.resolutions ?
+         this.event.request.intent.slots.disaggregationData.resolutions.resolutionsPerAuthority[0].values[0].value.name : undefined;
+        let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.resolutions.resolutionsPerAuthority[0].values[0].value.name;
         speechOutput = "No data";
         try {
-            await requestGSheet('14vVRftpNKYWj0ii2Fxi3r88U4H6u9GDnZJ1mB-LvepY', (results) => {
-                let data = results.data;
-                let columnName = "";
-                let values = data;
-                if (wfpcountrySlotRaw) {
-                    values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
-                }
-                if (residenceStatusSlotRaw) {
+            if (disaggregationDataSlotRaw) {
+                // If the user want an information about the sex or the age groups
+                await requestGSheet('1l-G2-g8XrnmiD9RMzqq0ELMxNHjNKov7wGW5CqxrHcU', (results) => {
+                    let columnName = "";
+                    let headerName = "";
+                    // We are filtering according to the country the user typed
+                    let values = results.data;
+                    if (wfpcountrySlotRaw) {
+                        values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                    }
+                    let values1 = [];
+                    let values2 = [];
+                    switch (disaggregationDataSlotRaw.toLowerCase()) {
+                        case 'age':
+                            headerName = "Age groups";
+                            values1 = values.filter(row => row[headerName] === "Adults (>18)");
+                            values2 = values.filter(row => row[headerName] === "Children (5-18)" || row[headerName] === "Children (< 5)");
+                            break;
+                        case 'sex':
+                            headerName="Sex";
+                            values1 = values.filter(row => row[headerName] === "Male");
+                            values2 = values.filter(row => row[headerName] === "Female");
+                            break;
+                    }
+                    let displayedValue1 = calculateSum(values1, 'Number of beneficiaries');
+                    let displayedValue2 = calculateSum(values2, 'Number of beneficiaries');
+                    if (headerName === "Sex") {
+                        speechOutput = "There are " + displayedValue1 + " men and " + displayedValue2 + " women " + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '');
+                    }
+                    else if (headerName === "Age groups") {
+                        speechOutput = "There are " + displayedValue1 + " adults and " + displayedValue2 + " children " + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '');
+                    }
+                    this.emit(":ask", speechOutput);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    throw error;
+                });
+            }
+            else {
+                await requestGSheet('14vVRftpNKYWj0ii2Fxi3r88U4H6u9GDnZJ1mB-LvepY', (results) => {
+                    let columnName = "";
+                    let values = results.data;
+                    if (wfpcountrySlotRaw) {
+                        values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                    }
                     switch (residenceStatusSlotRaw.toLowerCase()) {
                         case 'residents':
                             columnName="Residents";
@@ -196,74 +238,19 @@ const handlers = {
                     if (columnName !== "") {
                         values = values.filter(row => row['Residence Status'] === columnName);
                     }
-                }
-                let displayedValue = calculateSum(values, 'Number of beneficiaries');
-                speechOutput = "There is " + displayedValue + " " + residenceStatusSlotRaw + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '') ;
-                this.emit(":ask", speechOutput);
-            })
-            .catch((error) => {
-                console.error(error);
-                throw error;
-            });
+                    let displayedValue = calculateSum(values, 'Number of beneficiaries');
+                    speechOutput = "There are " + displayedValue + " " + residenceStatusSlotRaw + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '');
+                    this.emit(":ask", speechOutput);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    throw error;
+                });
+            }
         }
         catch (e) {
-            speechOutput = "There was an issue whith the request about the transfer data.";
-        }
-    },
-    'GetBeneficiariesDisaggregated': async function () {
-        let disaggregationDataSlotRaw = this.event.request.intent.slots.disaggregationData.value;
-        let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
-        speechOutput = "No data";
-        try {
-            await requestGSheet('1l-G2-g8XrnmiD9RMzqq0ELMxNHjNKov7wGW5CqxrHcU', (results) => {
-                let data = results.data;
-                let columnName = "";
-                let headerName = "";
-                let values = data;
-                if (wfpcountrySlotRaw) {
-                    values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
-                }
-                if (disaggregationDataSlotRaw) {
-                    switch (disaggregationDataSlotRaw.toLowerCase()) {
-                        case 'adults':
-                            columnName="Adults (>18)";
-                            headerName="Age groups";
-                            break;
-                        case 'children':
-                            columnName="Children";
-                            headerName="Age groups";
-                            break;
-                        case 'male':
-                        case 'men':
-                            columnName="Male";
-                            headerName="Sex";
-                            break;
-                        case 'female':
-                        case 'women':
-                            columnName="Female";
-                            headerName="Sex";
-                            break;
-                        case 'beneficiaries':
-                            break;
-                    }
-                    if (columnName === "Children") {
-                        values = values.filter(row => row[headerName] === "Children (5-18)" || row[headerName] === "Children (< 5)");
-                    }
-                    else if (columnName !== "") {
-                        values = values.filter(row => row[headerName] === columnName);
-                    }
-                }
-                let displayedValue = calculateSum(values, 'Number of beneficiaries');
-                speechOutput = "There are " + displayedValue + " " + disaggregationDataSlotRaw + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '') ;
-                this.emit(":ask", speechOutput);
-            })
-            .catch((error) => {
-                console.error(error);
-                throw error;
-            });
-        }
-        catch (e) {
-            speechOutput = "There was an issue whith the request about the transfer data.";
+            speechOutput = "There was an issue whith the request about the beneficiaries.";
+            this.emit(":ask", speechOutput);
         }
     },
     'AMAZON.FallbackIntent': function () {

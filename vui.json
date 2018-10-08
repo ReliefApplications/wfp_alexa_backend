@@ -24,11 +24,50 @@
                     "samples": []
                 },
                 {
-                    "name": "GetIndicatorCountry",
+                    "name": "ShowDashboard",
                     "slots": [
                         {
-                            "name": "indcator",
-                            "type": "INDICATOR"
+                            "name": "wfpcountry",
+                            "type": "WFPCOUNTRY"
+                        }
+                    ],
+                    "samples": [
+                        "Show me the home page",
+                        "Go back to the home page",
+                        "show me the data for {wfpcountry}",
+                        "show me the informations for {wfpcountry}",
+                        "show me the info for {wfpcountry}",
+                        "show me the dashboard for {wfpcountry} "
+                    ]
+                },
+                {
+                    "name": "GetFoodnCashDistribution",
+                    "slots": [
+                        {
+                            "name": "wfpcountry",
+                            "type": "WFPCOUNTRY"
+                        },
+                        {
+                            "name": "unit",
+                            "type": "UNIT"
+                        },
+                        {
+                            "name": "timeframe",
+                            "type": "TIMEFRAME"
+                        }
+                    ],
+                    "samples": [
+                        "What is the {timeframe} {unit} for {wfpcountry}",
+                        "tell me the {timeframe} {unit} for {wfpcountry}",
+                        "give me the {timeframe} {unit} for {wfpcountry}"
+                    ]
+                },
+                {
+                    "name": "GetTransferData",
+                    "slots": [
+                        {
+                            "name": "programType",
+                            "type": "PROGRAMTYPE"
                         },
                         {
                             "name": "wfpcountry",
@@ -36,11 +75,48 @@
                         }
                     ],
                     "samples": [
-                        "How many {indcator} do we have in {wfpcountry}",
-                        "give me the number of {indcator} in {wfpcountry}",
-                        "tell me how many {indcator} has in {wfpcountry}",
-                        "How many {indcator} has in {wfpcountry}",
-                        "How many {indcator} WFP serves in {wfpcountry}"
+                        "What is the total budget of {programType} in {wfpcountry}"
+                    ]
+                },
+                {
+                    "name": "GetBeneficiaries",
+                    "slots": [
+                        {
+                            "name": "residenceStatus",
+                            "type": "RESIDENCESTATUS"
+                        },
+                        {
+                            "name": "wfpcountry",
+                            "type": "WFPCOUNTRY"
+                        },
+                        {
+                            "name": "disaggregationData",
+                            "type": "DISSAGGREGATIONDATA"
+                        }
+                    ],
+                    "samples": [
+                        "what is the number of {residenceStatus} in {wfpcountry} ",
+                        "How many {residenceStatus} WFP serves in {wfpcountry}",
+                        "give me the number of {residenceStatus} in {wfpcountry}",
+                        "How many {residenceStatus} ",
+                        "How many {residenceStatus} in {wfpcountry}"
+                    ]
+                },
+                {
+                    "name": "GetBeneficiariesDisaggregated",
+                    "slots": [
+                        {
+                            "name": "wfpcountry",
+                            "type": "WFPCOUNTRY"
+                        },
+                        {
+                            "name": "disaggregationData",
+                            "type": "DISSAGGREGATIONDATA"
+                        }
+                    ],
+                    "samples": [
+                        "Tell me the number beneficiaries in {wfpcountry} disaggregated by {disaggregationData} ",
+                        "How many {disaggregationData} is WFP targeting in {wfpcountry}"
                     ]
                 }
             ],
@@ -56,11 +132,6 @@
                         {
                             "name": {
                                 "value": "INDICATORS"
-                            }
-                        },
-                        {
-                            "name": {
-                                "value": "BENEFICIARIES"
                             }
                         }
                     ]
@@ -110,7 +181,10 @@
                         },
                         {
                             "name": {
-                                "value": "Korea"
+                                "value": "Korea",
+                                "synonyms": [
+                                    "D P R K"
+                                ]
                             }
                         },
                         {
@@ -125,7 +199,11 @@
                         },
                         {
                             "name": {
-                                "value": "Lao PDR"
+                                "value": "Lao PDR",
+                                "synonyms": [
+                                    "Lao",
+                                    "Laos"
+                                ]
                             }
                         },
                         {
@@ -140,7 +218,7 @@
                         },
                         {
                             "name": {
-                                "value": "Phillipines"
+                                "value": "Philippines"
                             }
                         },
                         {
@@ -150,7 +228,117 @@
                         },
                         {
                             "name": {
-                                "value": "Myanmar"
+                                "value": "Myanmar",
+                                "synonyms": [
+                                    "Burma"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "TIMEFRAME",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "actual",
+                                "synonyms": [
+                                    "current"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "planned"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "UNIT",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "Metric tons of food"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "USD",
+                                "synonyms": [
+                                    "U S dollars"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "PROGRAMTYPE",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "Capacity strengthening"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "RESIDENCESTATUS",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "returnees"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "residents"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "refugees"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "IDP"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "beneficiaries"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "DISSAGGREGATIONDATA",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "children"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "adults"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "male",
+                                "synonyms": [
+                                    "men"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "female",
+                                "synonyms": [
+                                    "women"
+                                ]
                             }
                         }
                     ]

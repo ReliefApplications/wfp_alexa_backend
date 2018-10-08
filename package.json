@@ -1,10 +1,29 @@
 {
-    "name": "alexa-skill-kit-sdk-factskill",
-    "version": "1.0.0",
-    "private": true,
-    "dependencies": {
-        "alexa-sdk": "^1.0.25",
-        "babyparse": "^0.4.6",
-        "request": "^2.88.0"
-    }
+  "name": "alexa-skill-kit-sdk-factskill",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "alexa-sdk": "^1.0.25",
+    "babyparse": "^0.4.6",
+    "express": "^4.16.3",
+    "request": "^2.88.0",
+    "serverless-http": "^1.6.0"
+  },
+  "description": "The .json of the Alexa skills kit is saved in vui.json.",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ReliefApplications/backend_alexa_wfp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ReliefApplications/backend_alexa_wfp/issues"
+  },
+  "homepage": "https://github.com/ReliefApplications/backend_alexa_wfp#readme"
 }
