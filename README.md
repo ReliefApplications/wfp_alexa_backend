@@ -7,6 +7,8 @@ The .json of the Alexa skills kit is saved in vui.json.
 ```
 npm install ?
 other commands ?
+
+npm run build
 ```
 
 ### Deployment informations 
