@@ -1,44 +1,70 @@
 const request = require('request');
-const Constants =       require('../Constants').Constants;
+const Constants = require('../Constants').Constants;
 
 exports.CoreHandler = {
-  'LaunchRequest': function () {
-    //This is triggered when the user says: 'Open wfp asia pacific'
-    this.emit(':ask', Constants.TEXTS.welcomeOutput, Constants.TEXTS.welcomeReprompt)
+  'LaunchRequest': {
+  //This is triggered when the user says: 'Open wfp asia pacific'
+    canHandle(handlerInput) {
+          return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
+    },
+    handle(handlerInput) {
+        return handlerInput.responseBuilder
+                          .speak(Constants.TEXTS.welcomeOutput)
+                          .reprompt(Constants.TEXTS.welcomeReprompt)
+                          .withSimpleCard('Welcome to WFP !', Constants.TEXTS.welcomeOutput)
+                          .getResponse();
+    }
   },
-  'ShowDashboard': async function () {
-      let wfpcountrySlotRaw = this.event.request.intent.slots.wfpcountry.value;
-      let userId = this.event.session.user.userId;
-      let data = {}
-      if (wfpcountrySlotRaw) {
-          data[userId] = wfpcountrySlotRaw;
-      }
-      else {
-          data[userId] = "home";
-      }
-      let params = {
-            method: "put",
-            uri: Constants.ENDPOINTS.jsonData,
-            body: data,
-            json: true,
-            headers: {'content-type': 'application/json'}
-        };
+  'ShowDashboard': {
+    canHandle(handlerInput, error) {
+          return handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'ShowDashboard';
+    },
+    async handle(handlerInput, error) {
+          let wfpcountrySlotRaw = handlerInput.requestEnvelope.request.intent.slots.wfpcountry.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+          let userId = handlerInput.requestEnvelope.session.user.userId;
+          let data = {}
+          if (wfpcountrySlotRaw) {
+              data[userId] = wfpcountrySlotRaw;
+          }
+          else {
+              data[userId] = "home";
+          }
+          let params = {
+                method: "put",
+                uri: Constants.ENDPOINTS.jsonData,
+                body: data,
+                json: true,
+                headers: {'content-type': 'application/json'}
+            };
 
-      var speechOutput = 'Here is the ' + wfpcountrySlotRaw + ' dashboard.';
-      try {
-          await request(params, ((err, data) => {
-              if(err !== null){
-                console.error("e", err);
-              }
-              else {
-                  console.log(data);
-                  this.emit(":ask", speechOutput);
-              }
-          }));
-      }
-      catch (e) {
-          speechOutput = "There was an issue while displaying the dashboard";
-          this.emit(":ask", speechOutput);
+          let speechOutput = 'Here is the ' + wfpcountrySlotRaw + ' dashboard.';
+          try {
+              console.log('request');
+              await request(params, ((err, data) => {
+                  console.log('in rq');
+                  if(err !== null){
+                    console.error("e", err);
+                  }
+                  else {
+                      console.log('gut');
+                      return handlerInput.responseBuilder
+                                        .speak('yup');
+                                        // .reprompt(speechOutput)
+                                        // .withSimpleCard('Dashboard !', speechOutput)
+                                        // .getResponse();
+                  }
+              }));
+          }
+          catch (e) {
+              console.error('err', e);
+              speechOutput = "There was an issue while displaying the dashboard";
+              return handlerInput.responseBuilder
+                                .speak(speechOutput)
+                                .reprompt(speechOutput)
+                                .withSimpleCard('Dashboard error !', speechOutput)
+                                .getResponse();
+          }
       }
   }
 }

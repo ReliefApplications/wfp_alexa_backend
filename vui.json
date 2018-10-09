@@ -95,28 +95,13 @@
                         }
                     ],
                     "samples": [
+                        "How many beneficiaries is WFP targeting in {wfpcountry} by {disaggregationData}",
+                        "Tell me the number beneficiaries in {wfpcountry} disaggregated by {disaggregationData}",
                         "what is the number of {residenceStatus} in {wfpcountry} ",
                         "How many {residenceStatus} WFP serves in {wfpcountry}",
                         "give me the number of {residenceStatus} in {wfpcountry}",
                         "How many {residenceStatus} ",
                         "How many {residenceStatus} in {wfpcountry}"
-                    ]
-                },
-                {
-                    "name": "GetBeneficiariesDisaggregated",
-                    "slots": [
-                        {
-                            "name": "wfpcountry",
-                            "type": "WFPCOUNTRY"
-                        },
-                        {
-                            "name": "disaggregationData",
-                            "type": "DISSAGGREGATIONDATA"
-                        }
-                    ],
-                    "samples": [
-                        "Tell me the number beneficiaries in {wfpcountry} disaggregated by {disaggregationData} ",
-                        "How many {disaggregationData} is WFP targeting in {wfpcountry}"
                     ]
                 }
             ],
@@ -317,27 +302,22 @@
                     "values": [
                         {
                             "name": {
-                                "value": "children"
-                            }
-                        },
-                        {
-                            "name": {
-                                "value": "adults"
-                            }
-                        },
-                        {
-                            "name": {
-                                "value": "male",
+                                "value": "age",
                                 "synonyms": [
-                                    "men"
+                                    "children",
+                                    "adults"
                                 ]
                             }
                         },
                         {
                             "name": {
-                                "value": "female",
+                                "value": "gender",
                                 "synonyms": [
-                                    "women"
+                                    "sex",
+                                    "women",
+                                    "female",
+                                    "male",
+                                    "men"
                                 ]
                             }
                         }

@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "alexa-sdk": "^1.0.25",
+    "ask-sdk-core": "^2.1.0",
+    "ask-sdk-model": "^1.7.1",
     "babyparse": "^0.4.6",
     "express": "^4.16.3",
-    "request": "^2.88.0",
-    "serverless-http": "^1.6.0"
+    "request": "^2.88.0"
   },
   "description": "The .json of the Alexa skills kit is saved in vui.json.",
   "main": "index.js",
