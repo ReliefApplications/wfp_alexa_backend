@@ -20,7 +20,7 @@ exports.CoreHandler = {
           return handlerInput.requestEnvelope.request.type === 'IntentRequest'
       && handlerInput.requestEnvelope.request.intent.name === 'ShowDashboard';
     },
-    async handle(handlerInput, error) {
+    handle(handlerInput, error) {
           let wfpcountrySlotRaw = handlerInput.requestEnvelope.request.intent.slots.wfpcountry.resolutions.resolutionsPerAuthority[0].values[0].value.name;
           let userId = handlerInput.requestEnvelope.session.user.userId;
           let data = {}
@@ -39,32 +39,33 @@ exports.CoreHandler = {
             };
 
           let speechOutput = 'Here is the ' + wfpcountrySlotRaw + ' dashboard.';
-          try {
-              console.log('request');
-              await request(params, ((err, data) => {
-                  console.log('in rq');
+          return new Promise((resolve, reject) => {
+              request(params, ((err, data) => {
                   if(err !== null){
                     console.error("e", err);
+                    reject(e);
                   }
                   else {
-                      console.log('gut');
-                      return handlerInput.responseBuilder
-                                        .speak('yup');
-                                        // .reprompt(speechOutput)
-                                        // .withSimpleCard('Dashboard !', speechOutput)
-                                        // .getResponse();
+                      resolve(speechOutput);
                   }
               }));
-          }
-          catch (e) {
-              console.error('err', e);
-              speechOutput = "There was an issue while displaying the dashboard";
+          })
+          .then((result) => {
               return handlerInput.responseBuilder
-                                .speak(speechOutput)
-                                .reprompt(speechOutput)
-                                .withSimpleCard('Dashboard error !', speechOutput)
+                                .speak(result)
+                                .reprompt(result)
+                                .withSimpleCard('Dashboard !', result)
                                 .getResponse();
+                    },
+                    (error) => {
+                        console.error('err', error);
+                        speechOutput = "There was an issue while displaying the dashboard";
+                        return handlerInput.responseBuilder
+                                        .speak(speechOutput)
+                                        .reprompt(speechOutput)
+                                        .withSimpleCard('Dashboard error !', speechOutput)
+                                        .getResponse();
+                        });
           }
       }
   }
-}

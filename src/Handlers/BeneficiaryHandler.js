@@ -6,15 +6,14 @@ exports.BeneficiaryHandler = {
           return handlerInput.requestEnvelope.request.type === 'IntentRequest'
       && handlerInput.requestEnvelope.request.intent.name === 'GetFoodnCashDistribution';
     },
-    async handle(handlerInput, error) {
+    handle(handlerInput, error) {
         // We go this deep to avoid checking for every synonyms in our functions and use the core value
         let unitSlotRaw = handlerInput.requestEnvelope.request.intent.slots.unit.resolutions.resolutionsPerAuthority[0].values[0].value.name;
         let wfpcountrySlotRaw = handlerInput.requestEnvelope.request.intent.slots.wfpcountry.resolutions.resolutionsPerAuthority[0].values[0].value.name;
         let timeframeSlotRaw = handlerInput.requestEnvelope.request.intent.slots.timeframe.resolutions.resolutionsPerAuthority[0].values[0].value.name;
         var speechOutput = "No data";
-
-        try {
-            await Utils.requestGSheet('1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ', (results) => {
+        return new Promise((resolve, reject) => {
+            Utils.requestGSheet('1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ', (results) => {
                 let data = results.data;
                 let columnName = "";
                 let middlePhrase = "";
@@ -47,22 +46,25 @@ exports.BeneficiaryHandler = {
                 let values = data.filter(row => row['Country'] === wfpcountrySlotRaw);
                 let displayedValue = Utils.calculateSum(values, columnName);
                 speechOutput = "The " + wfpcountrySlotRaw + middlePhrase + displayedValue + " " + unitSlotRaw + endPhrase;
-                return handlerInput.responseBuilder
-                                  .speak(speechOutput)
-                                  .reprompt(speechOutput)
-                                  .getResponse();
+                resolve(speechOutput);
             })
-            .catch((error) => {
-                console.error(error);
-            });
-        }
-        catch (e) {
+        })
+        .then((result) => {
+            return handlerInput.responseBuilder
+                              .speak(result)
+                              .reprompt(result)
+                              .withSimpleCard('Food and cash distribution !', result)
+                              .getResponse();
+        },
+        (error) => {
+            console.error('err', error);
             speechOutput = "There was an issue whith the request about the food and cash distribution";
             return handlerInput.responseBuilder
                               .speak(speechOutput)
                               .reprompt(speechOutput)
+                              .withSimpleCard('GetFoodnCashDistribution error !', speechOutput)
                               .getResponse();
-        }
+            });
     }
   },
   GetTransferData: {
@@ -70,12 +72,12 @@ exports.BeneficiaryHandler = {
           return handlerInput.requestEnvelope.request.type === 'IntentRequest'
       && handlerInput.requestEnvelope.request.intent.name === 'GetTransferData';
     },
-    async handle(handlerInput, error) {
+    handle(handlerInput, error) {
       let programTypeSlotRaw = handlerInput.requestEnvelope.request.intent.slots.programType.resolutions.resolutionsPerAuthority[0].values[0].value.name;
       let wfpcountrySlotRaw = handlerInput.requestEnvelope.request.intent.slots.wfpcountry.resolutions.resolutionsPerAuthority[0].values[0].value.name;
         speechOutput = "No data";
-        try {
-            await Utils.requestGSheet('1Cvqf2nCLWCA5GWSochdk10HLtUQCx6TUVdOAbRi21Gg', (results) => {
+        return new Promise((resolve, reject) => {
+            Utils.requestGSheet('1Cvqf2nCLWCA5GWSochdk10HLtUQCx6TUVdOAbRi21Gg', (results) => {
                 let data = results.data;
                 let columnName = "";
                 switch (programTypeSlotRaw.toLowerCase()) {
@@ -86,22 +88,25 @@ exports.BeneficiaryHandler = {
                 let values = data.filter(row => row['CO'] === wfpcountrySlotRaw);
                 let displayedValue = Utils.calculateSum(values, columnName);
                 speechOutput = "The amount of " + programTypeSlotRaw + " in " + wfpcountrySlotRaw + " is " + displayedValue + " USD.";
-                return handlerInput.responseBuilder
-                                  .speak(speechOutput)
-                                  .reprompt(speechOutput)
-                                  .getResponse();
+                resolve(speechOutput);
             })
-            .catch((error) => {
-                console.error(error);
-            });
-        }
-        catch (e) {
+        })
+        .then((result) => {
+            return handlerInput.responseBuilder
+                              .speak(result)
+                              .reprompt(result)
+                              .withSimpleCard('Transfer Data !', result)
+                              .getResponse();
+        },
+        (error) => {
+            console.error('err', error);
             speechOutput = "There was an issue whith the request about the transfer data.";
             return handlerInput.responseBuilder
                               .speak(speechOutput)
                               .reprompt(speechOutput)
+                              .withSimpleCard('Transfer Data error !', speechOutput)
                               .getResponse();
-        }
+        });
     }
   },
   GetBeneficiaries: {
@@ -109,17 +114,17 @@ exports.BeneficiaryHandler = {
           return handlerInput.requestEnvelope.request.type === 'IntentRequest'
       && handlerInput.requestEnvelope.request.intent.name === 'GetBeneficiaries';
     },
-    async handle(handlerInput, error) {
-        let residenceStatusSlotRaw = handlerInput.requestEnvelope.request.intent.slots.residenceStatus.resolutions ?
-        handlerInput.requestEnvelope.request.intent.slots.residenceStatus.resolutions.resolutionsPerAuthority[0].values[0].value.name : undefined;
+    handle(handlerInput, error) {
+        let residenceStatusSlotRaw = handlerInput.requestEnvelope.request.intent.slots.residenceStatus.resolutions.resolutionsPerAuthority[0].values[0].value.name;
         let disaggregationDataSlotRaw = handlerInput.requestEnvelope.request.intent.slots.disaggregationData.resolutions ?
         handlerInput.requestEnvelope.request.intent.slots.disaggregationData.resolutions.resolutionsPerAuthority[0].values[0].value.name : undefined;
-        let wfpcountrySlotRaw = handlerInput.requestEnvelope.request.intent.slots.wfpcountry.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+        let wfpcountrySlotRaw = handlerInput.requestEnvelope.request.intent.slots.wfpcountry.resolutions ?
+        handlerInput.requestEnvelope.request.intent.slots.wfpcountry.resolutions.resolutionsPerAuthority[0].values[0].value.name : undefined;
         speechOutput = "No data";
-        try {
+        return new Promise((resolve, reject) => {
             if (disaggregationDataSlotRaw) {
                 // If the user want an information about the sex or the age groups
-                await Utils.requestGSheet('1l-G2-g8XrnmiD9RMzqq0ELMxNHjNKov7wGW5CqxrHcU', (results) => {
+                Utils.requestGSheet('1l-G2-g8XrnmiD9RMzqq0ELMxNHjNKov7wGW5CqxrHcU', (results) => {
                     let columnName = "";
                     let headerName = "";
                     // We are filtering according to the country the user typed
@@ -149,18 +154,11 @@ exports.BeneficiaryHandler = {
                     else if (headerName === "Age groups") {
                         speechOutput = "There are " + displayedValue1 + " adults and " + displayedValue2 + " children " + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '');
                     }
-                    return handlerInput.responseBuilder
-                                      .speak(speechOutput)
-                                      .reprompt(speechOutput)
-                                      .getResponse();
-                })
-                .catch((error) => {
-                    console.error(error);
-                    throw error;
+                    resolve(speechOutput);
                 });
             }
             else {
-                await Utils.requestGSheet('14vVRftpNKYWj0ii2Fxi3r88U4H6u9GDnZJ1mB-LvepY', (results) => {
+                Utils.requestGSheet('14vVRftpNKYWj0ii2Fxi3r88U4H6u9GDnZJ1mB-LvepY', (results) => {
                     let columnName = "";
                     let values = results.data;
                     if (wfpcountrySlotRaw) {
@@ -185,27 +183,29 @@ exports.BeneficiaryHandler = {
                     if (columnName !== "") {
                         values = values.filter(row => row['Residence Status'] === columnName);
                     }
+                    console.log('OUI', columnName, residenceStatusSlotRaw, values);
                     let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
                     speechOutput = "There are " + displayedValue + " " + residenceStatusSlotRaw + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '');
-                    return handlerInput.responseBuilder
-                                      .speak(speechOutput)
-                                      .reprompt(speechOutput)
-                                      .getResponse();
-                })
-                .catch((error) => {
-                    console.error(error);
-                    throw error;
+                    resolve(speechOutput);
                 });
             }
-        }
-        catch (e) {
-            console.error(e);
-            speechOutput = "There was an issue whith the request about the beneficiaries.";
+        })
+        .then((result) => {
             return handlerInput.responseBuilder
-                              .speak(speechOutput)
-                              .reprompt(speechOutput)
+                              .speak(result)
+                              .reprompt(result)
+                              .withSimpleCard('Beneficiaries !', result)
                               .getResponse();
-        }
+                          },
+                          (error) => {
+                              console.error('err', error);
+                              speechOutput = "There was an issue whith the request about the beneficiaries.";
+                              return handlerInput.responseBuilder
+                                              .speak(speechOutput)
+                                              .reprompt(speechOutput)
+                                              .withSimpleCard('Beneficiaries error !', speechOutput)
+                                              .getResponse();
+                          });
       }
   }
 }
