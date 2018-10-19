@@ -67,5 +67,13 @@ exports.Utils = {
     emitNewDash: function(userId, country, data) {
         socket.open();
         socket.emit('newDashboard', userId, country, JSON.stringify(data));
+    },
+    /**
+     * This function is used in order to generate a random numer in order to choose which answer Alexa will say.
+     * @param maxNumber number
+     * @returns {number}
+     */
+    getPseudoRandomNumber: function(maxNumber) {
+        return new Date().getMilliseconds()%maxNumber;
     }
 };

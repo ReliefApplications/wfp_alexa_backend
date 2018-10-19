@@ -26,6 +26,7 @@ $RECYCLE.BIN/
 .env.test.local
 .env.production.local
 /node_modules
+/dist
 
 # =========================
 # Operating System Files

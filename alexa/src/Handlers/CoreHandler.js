@@ -19,7 +19,14 @@ exports.CoreHandler = {
               request.slots.wfpcountry.resolution(0).first().name : undefined;
           let userId = request.userId;
 
-          let speechOutput = 'Here is the ' + wfpcountrySlotRaw + ' dashboard.';
+          let speechOutput = "";
+          if (wfpcountrySlotRaw === undefined) {
+              speechOutput = "Here is the home page."
+          }
+          else {
+              let answers = ["Displaying the data for ", "Tis is the dashboard for ", "Here's your data for "];
+              speechOutput = answers[Utils.getPseudoRandomNumber(answers.length)] + wfpcountrySlotRaw;
+          }
           return new Promise((resolve, reject) => {
               let googleFiles = [
                   '1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ',

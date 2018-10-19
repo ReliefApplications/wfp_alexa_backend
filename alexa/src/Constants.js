@@ -1,7 +1,8 @@
 exports.Constants = {
   TEXTS: {
     welcomeOutput: "Welcome to the World Food Programme dashboard ! What would you like to know about WFP ?",
-    welcomeReprompt: "You can ask a question like how many outputs WFP serves in Nepal ?"
+    welcomeReprompt: "You can ask a question like how many outputs WFP serves in Nepal ?",
+    subjects: ["WFP", "The World Food Programme", "We"]
   },
 
   ENDPOINTS: {

@@ -102,6 +102,9 @@ exports.BeneficiaryHandler = {
     ,
     GetBeneficiaries:
         function(request, response) {
+            const adults = "Adults (>18)";
+            const teenagers = "Children (5-18)";
+            const children = "Children (< 5)";
             let residenceStatusSlotRaw = request.slots.residenceStatus.resolution(0) ?
             request.slots.residenceStatus.resolution(0).first().name : undefined;
             let residenceStatusSlotValue = request.slots.residenceStatus.value;
@@ -109,45 +112,125 @@ exports.BeneficiaryHandler = {
             request.slots.disaggregationData.resolution(0).first().name : undefined;
             let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
             request.slots.wfpcountry.resolution(0).first().name : undefined;
-            let unitSlotRaw = request.slots.unit.resolution(0) ?
-                request.slots.unit.resolution(0).first().name : undefined;
+            let unitSlotRaw = request.slots.value;
+            let typeSlotRaw = request.slots.type.resolution(0) ?
+                request.slots.type.resolution(0).first().name : undefined;
+            let ageFromSlotRaw = request.slots.age_from.value;
+            let ageToSlotRaw = request.slots.age_to.value;
             let speechOutput = "No data";
             return new Promise((resolve, reject) => {
                 if (disaggregationDataSlotRaw) {
                     // If the user want an information about the sex or the age groups
                     Utils.requestGSheet('1l-G2-g8XrnmiD9RMzqq0ELMxNHjNKov7wGW5CqxrHcU', (results) => {
-                        let columnName = "";
                         let headerName = "";
                         // We are filtering according to the country the user typed
                         let values = results.data;
                         if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() !== "Asia") {
                             values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
                         }
-                        let values1 = [];
-                        let values2 = [];
                         switch (disaggregationDataSlotRaw.toLowerCase()) {
-                            case 'age':
-                                headerName = "Age groups";
-                                values1 = values.filter(row => row[headerName] === "Adults (>18)");
-                                values2 = values.filter(row => row[headerName] === "Children (5-18)" || row[headerName] === "Children (< 5)");
+                            case 'children':
+                                headerName="Age groups";
+                                values = values.filter(row => row[headerName] === teenagers || row[headerName] === children);
                                 break;
-                            case 'gender':
+                            case 'adults':
+                                headerName="Age groups";
+                                values = values.filter(row => row[headerName] === adults);
+                                break;
+                            case 'male':
                                 headerName="Sex";
-                                values1 = values.filter(row => row[headerName] === "Male");
-                                values2 = values.filter(row => row[headerName] === "Female");
+                                values = values.filter(row => row[headerName] === "Male");
+                                break;
+                            case 'female':
+                                headerName="Sex";
+                                values = values.filter(row => row[headerName] === "Female");
                                 break;
                         }
-                        console.log('OUI', columnName, residenceStatusSlotRaw, values1, values2);
-                        let displayedValue1 = Utils.calculateSum(values1, 'Number of beneficiaries');
-                        let displayedValue2 = Utils.calculateSum(values2, 'Number of beneficiaries');
+                        // Between
+                        if (ageFromSlotRaw && ageToSlotRaw) {
+                            if (ageFromSlotRaw <= 5 && ageToSlotRaw <= 5) {
+                                values = values.filter(row => row["Age groups"] === children);
+                            }
+                            else if (ageFromSlotRaw <= 5 && ageToSlotRaw <= 18) {
+                                values = values.filter(row => row["Age groups"] === children || row["Age groups"] === teenagers);
+                            }
+                            else if (ageFromSlotRaw <= 5 && ageToSlotRaw > 18) {
+                                values = values.filter(row => row["Age groups"] === adults);
+                            }
+                            else if (ageFromSlotRaw <= 18 && ageToSlotRaw <= 18) {
+                                values = values.filter(row => row["Age groups"] === teenagers);
+                            }
+                            else if (ageFromSlotRaw <= 18 && ageToSlotRaw > 18) {
+                                values = values.filter(row =>  row["Age groups"] === teenagers || row["Age groups"] === adults);
+                            }
+                            else if (ageFromSlotRaw > 18 && ageToSlotRaw > 18) {
+                                values = values.filter(row => row["Age groups"] === adults);
+                            }
+                        }
+                        // Under
+                        else if (ageFromSlotRaw && !ageToSlotRaw) {
+                            if (ageFromSlotRaw <= 5) {
+                                values = values.filter(row => row["Age groups"] === children);
+                            }
+                            else if (ageFromSlotRaw <= 18) {
+                                values = values.filter(row => row["Age groups"] === children || row["Age groups"] === teenagers);
+                            }
+                        }
+                        // Over
+                        else if (!ageFromSlotRaw && ageToSlotRaw) {
+                            if (ageToSlotRaw > 18) {
+                                values = values.filter(row => row["Age groups"] === adults);
+                            }
+                            else if (ageToSlotRaw > 5) {
+                                values = values.filter(row => row["Age groups"] === teenagers || row["Age groups"] === adults);
+                            }
+                        }
+                        let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
                         if (wfpcountrySlotRaw === "Asia") {
                             wfpcountrySlotRaw = "globally";
                         }
-                        if (headerName === "Sex") {
-                            speechOutput = "There are " + displayedValue1 + " men and " + displayedValue2 + " women " + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '');
+                        if (displayedValue === 0) {
+                            speechOutput = Constants.TEXTS.subjects(Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length))
+                                + "did not distribute any " + unitSlotRaw + " to " + disaggregationDataSlotRaw + " in " + wfpcountrySlotRaw;
                         }
-                        else if (headerName === "Age groups") {
-                            speechOutput = "There are " + displayedValue1 + " adults and " + displayedValue2 + " children " + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '');
+                        else {
+                            switch(Utils.getPseudoRandomNumber(3)) {
+                                case 0:
+                                    speechOutput = Constants.TEXTS.subjects(Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length))
+                                        + " distributed " + unitSlotRaw + " to " + displayedValue + disaggregationDataSlotRaw +
+                                        (ageFromSlotRaw ?
+                                            (ageToSlotRaw ?
+                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old "
+                                                : " under " + ageFromSlotRaw)
+                                            : (ageToSlotRaw ?
+                                                " over " + ageToSlotRaw
+                                                : "")
+                                        )
+                                        + " in " +  wfpcountrySlotRaw;
+                                    break;
+                                case 1:
+                                    speechOutput = displayedValue + " " + disaggregationDataSlotRaw + (ageFromSlotRaw ?
+                                            (ageToSlotRaw ?
+                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old "
+                                                : " under " + ageFromSlotRaw)
+                                            : (ageToSlotRaw ?
+                                                " over " + ageToSlotRaw
+                                                : "")
+                                        )
+                                        + " received " + unitSlotRaw + " in " +  wfpcountrySlotRaw;
+                                    break;
+                                case 2:
+                                    speechOutput = displayedValue + " " + disaggregationDataSlotRaw + (ageFromSlotRaw ?
+                                            (ageToSlotRaw ?
+                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old "
+                                                : " under " + ageFromSlotRaw)
+                                            : (ageToSlotRaw ?
+                                                " over " + ageToSlotRaw
+                                                : "")
+                                        )
+                                        + " got " + unitSlotRaw + " in " +  wfpcountrySlotRaw;
+                                    break;
+                            }
                         }
                         resolve(speechOutput);
                     });
@@ -160,49 +243,58 @@ exports.BeneficiaryHandler = {
                         if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() !== "Asia") {
                             values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
                         }
-                        switch (residenceStatusSlotRaw.toLowerCase()) {
-                            case 'residents':
-                                columnName="Residents";
-                                break;
-                            case 'returnees':
-                                columnName="Returnees";
-                                break;
-                            case 'refugees':
-                                columnName="Refugees";
-                                break;
-                            case 'idp':
-                                columnName="IDP";
-                                break;
-                            case 'beneficiaries':
-                                break;
-                        }
-                        if (columnName !== "") {
-                            values = values.filter(row => row['Residence Status'] === columnName);
-                        }
-                        let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
-                        if (residenceStatusSlotValue.toLowerCase() === "households" || residenceStatusSlotValue.toLowerCase() === "participants") {
-                            speechOutput = "I'm sorry, the only data WFP has is about the beneficiaries. ";
+                        if (typeSlotRaw) {
+                            let types = [];
+                            values.filter((row) => {
+                                if (!types.includes(row['Residence Statut'])) {
+                                    types.push(row['Residence Statut']);
+                                }
+                            });
+                            speechOutput =  "The types of beneficiaries " + " has in " +  wfpcountrySlotRaw + (types.length === 0 ? " are none." : " are: " + types.join());
                         }
                         else {
-                            speechOutput = "";
-                        }
-                        let subjects = ["WFP", "The World Food Programme", "We"];
-                        let randomNumber = new Date().getMilliseconds()%3;
-                        console.log(randomNumber);
-                        if (wfpcountrySlotRaw === "Asia") {
-                            wfpcountrySlotRaw = "globally";
-                        }
-                        if (randomNumber%2 === 0) {
-                            speechOutput += subjects[randomNumber] + " served " + displayedValue + " " + residenceStatusSlotRaw + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '');
-                        }
-                        else {
-                            if (randomNumber === 0) {
-                                subjects[0] = subjects[0]+" has";
+                            switch (residenceStatusSlotRaw.toLowerCase()) {
+                                case 'residents':
+                                    columnName="Residents";
+                                    break;
+                                case 'returnees':
+                                    columnName="Returnees";
+                                    break;
+                                case 'refugees':
+                                    columnName="Refugees";
+                                    break;
+                                case 'idp':
+                                    columnName="IDP";
+                                    break;
+                                case 'beneficiaries':
+                                    break;
+                            }
+                            if (columnName !== "") {
+                                values = values.filter(row => row['Residence Status'] === columnName);
+                            }
+                            let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
+                            if (residenceStatusSlotValue.toLowerCase() === "households" || residenceStatusSlotValue.toLowerCase() === "participants") {
+                                speechOutput = "I'm sorry, the only data WFP has is about the beneficiaries. ";
                             }
                             else {
-                                subjects[randomNumber] = subjects[randomNumber]+" have";
+                                speechOutput = "";
                             }
-                            speechOutput += subjects[randomNumber] + " " + displayedValue + " " + residenceStatusSlotRaw + (wfpcountrySlotRaw ? " in " +  wfpcountrySlotRaw : '');
+                            let randomNumber = Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length);
+                            if (wfpcountrySlotRaw === "Asia") {
+                                wfpcountrySlotRaw = "globally";
+                            }
+                            if (randomNumber%2 === 0) {
+                                speechOutput += Constants.TEXTS.subjects[randomNumber] + " served " + displayedValue + " " + residenceStatusSlotRaw + " in " +  wfpcountrySlotRaw;
+                            }
+                            else {
+                                if (randomNumber === 0) {
+                                    Constants.TEXTS.subjects[0] = Constants.TEXTS.subjects[0]+" has";
+                                }
+                                else {
+                                    Constants.TEXTS.subjects[randomNumber] = Constants.TEXTS.subjects[randomNumber]+" have";
+                                }
+                                speechOutput += Constants.TEXTS.subjects[randomNumber] + " " + displayedValue + " " + residenceStatusSlotRaw + " in " +  wfpcountrySlotRaw;
+                            }
                         }
                         resolve(speechOutput);
                     });
