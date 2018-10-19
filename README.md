@@ -11,7 +11,7 @@ other commands ?
 npm run build
 ```
 
-### Deployment informations 
+### Deployment informations
 
 ### Lambda requirements
 
@@ -22,3 +22,10 @@ Things required to deploy a JS application on aws. You can put a link to the ama
 
 JS version
 libraries and minimal version ...
+
+
+### Architecture with use cases
+
+
+### SSL
+The certificat for the https url does expire on the 15th of January 2019.

@@ -1,0 +1,12 @@
+version: '2'
+services:
+
+    devapp:
+        image: developer7/wfp-alexa-socket
+        build: .
+        ports:
+            - '12112:12112'
+        volumes:
+            - './:/usr/dockers/devapp/'
+        entrypoint: Docker/docker-entrypoint.sh
+        restart: always
