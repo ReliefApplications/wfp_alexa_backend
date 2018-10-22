@@ -32,11 +32,12 @@
                         }
                     ],
                     "samples": [
+                        "Pull out the information for {wfpcountry}  and show it to me ",
+                        "Can I see the data on screen for {wfpcountry}",
+                        "Get me the data for {wfpcountry}",
+                        "Display the dashboard for {wfpcountry}",
                         "Show me the home page",
                         "Go back to the home page",
-                        "show me the data for {wfpcountry}",
-                        "show me the informations for {wfpcountry}",
-                        "show me the info for {wfpcountry}",
                         "show me the dashboard for {wfpcountry} "
                     ]
                 },
@@ -102,15 +103,42 @@
                             "type": "UNIT"
                         },
                         {
-                            "name": "age",
+                            "name": "type",
+                            "type": "TYPE"
+                        },
+                        {
+                            "name": "age_from",
+                            "type": "AMAZON.NUMBER"
+                        },
+                        {
+                            "name": "age_to",
                             "type": "AMAZON.NUMBER"
                         }
                     ],
                     "samples": [
-                        "What type of {residenceStatus} do we have in {wfpcountry} ",
+                        "How many {disaggregationData} over {age_to} received direct assistance in {wfpcountry}",
+                        "How many {disaggregationData} over {age_to} did {WFP} directly assist in {wfpcountry}",
+                        "How many {disaggregationData} over {age_to} did {WFP} distribute {unit} in {wfpcountry}",
+                        "How many {disaggregationData} over {age_to} did {WFP} serve in {wfpcountry}",
+                        "How many {disaggregationData} over {age_to} got {unit} in {wfpcountry}",
+                        "How many {disaggregationData} got {unit} in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} got {unit} in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old got {unit} in {wfpcountry}",
+                        "How many {disaggregationData} received direct assistance in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} received direct assistance in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old received direct assistance in {wfpcountry}",
+                        "How many {disaggregationData} did {WFP} directly assist in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} did {WFP} directly assist in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old did {WFP} directly assist in {wfpcountry}",
+                        "How many {disaggregationData} did {WFP} distribute {unit} in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} did {WFP} distribute {unit} in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old did {WFP} distribute {unit} in {wfpcountry}",
+                        "How many {residenceStatus} did {WFP} assist directly in {wfpcountry}",
+                        "How many {residenceStatus} did {WFP} assist in {wfpcountry}",
+                        "What {type} of {residenceStatus} do we have in {wfpcountry} ",
                         "How many {disaggregationData} did {WFP} serve in {wfpcountry}",
-                        "How many {disaggregationData} under {age} did {WFP} serve in {wfpcountry}",
-                        "How many {disaggregationData} {age} to {age} old did {WFP} serve in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} did {WFP} serve in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old did {WFP} serve in {wfpcountry}",
                         "How many {residenceStatus} received {unit} in {wfpcountry}",
                         "What's the number of {residenceStatus} that got assisted in {wfpcountry}",
                         "How many {residenceStatus} got {unit} in {wfpcountry}",
@@ -343,22 +371,30 @@
                     "values": [
                         {
                             "name": {
-                                "value": "age",
+                                "value": "male",
                                 "synonyms": [
-                                    "children",
-                                    "adults"
+                                    "men"
                                 ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "female",
+                                "synonyms": [
+                                    "women"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "adults"
                             }
                         },
                         {
                             "name": {
                                 "value": "gender",
                                 "synonyms": [
-                                    "sex",
-                                    "women",
-                                    "female",
-                                    "male",
-                                    "men"
+                                    "sex"
                                 ]
                             }
                         }
@@ -374,6 +410,16 @@
                                     "we",
                                     "the World Food Programme"
                                 ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "TYPE",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "type"
                             }
                         }
                     ]
