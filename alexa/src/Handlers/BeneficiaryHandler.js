@@ -43,6 +43,37 @@ exports.BeneficiaryHandler = {
                         let values = data.filter(row => row['Country'] === wfpcountrySlotRaw);
                         let displayedValue = Utils.calculateSum(values, columnName);
                         speechOutput = "The " + wfpcountrySlotRaw + middlePhrase + displayedValue + " " + unitSlotRaw + endPhrase;
+                        switch(Utils.getPseudoRandomNumber(3)) {
+                            case 0:
+                                speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                    + " distributed " + displayedValue + " of " + unitSlotRaw
+                                    + " in " +  wfpcountrySlotRaw;
+                                break;
+                            case 1:
+                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageFromSlotRaw !== undefined ?
+                                            (ageToSlotRaw !== undefined ?
+                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
+                                                : " under " + ageFromSlotRaw + " years old")
+                                            : (ageToSlotRaw !== undefined ?
+                                                " over " + ageToSlotRaw + " years old"
+                                                : "")
+                                    )
+                                    + " received " + (unitSlotRaw ? unitSlotRaw : "") + " assistance in " +  wfpcountrySlotRaw;
+                                break;
+                            case 2:
+                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageFromSlotRaw !== undefined ?
+                                            (ageToSlotRaw !== undefined ?
+                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
+                                                : " under " + ageFromSlotRaw + " years old")
+                                            : (ageToSlotRaw !== undefined ?
+                                                " over " + ageToSlotRaw + " years old"
+                                                : "")
+                                    )
+                                    + " got " + (unitSlotRaw ? unitSlotRaw : " helped ") + " in " +  wfpcountrySlotRaw;
+                                break;
+                        }
                         resolve(speechOutput);
                     })
                 })
@@ -150,17 +181,22 @@ exports.BeneficiaryHandler = {
                         // Between
                         if (ageFromSlotRaw && ageToSlotRaw) {
                             console.log("between");
-                            if (ageFromSlotRaw <= 5 && ageToSlotRaw <= 5) {
+                            if (ageFromSlotRaw > 18) {
+                                ageFromSlotRaw = 18;
+                                ageToSlotRaw = 200;
+                                values = values.filter(row => row["Age groups"] === adults);
+                            }
+                            else if (ageFromSlotRaw < 5 && ageToSlotRaw < 5) {
                                 ageFromSlotRaw = 0;
                                 ageToSlotRaw = 5;
                                 values = values.filter(row => row["Age groups"] === children);
                             }
-                            else if (ageFromSlotRaw <= 5 && ageToSlotRaw <= 18) {
+                            else if (ageFromSlotRaw < 5 && ageToSlotRaw <= 18) {
                                 ageFromSlotRaw = 0;
                                 ageToSlotRaw = 18;
                                 values = values.filter(row => row["Age groups"] === children || row["Age groups"] === teenagers);
                             }
-                            else if (ageFromSlotRaw <= 5 && ageToSlotRaw > 18) {
+                            else if (ageFromSlotRaw < 5 && ageToSlotRaw > 18) {
                                 ageFromSlotRaw = 0;
                                 ageToSlotRaw = 200;
                             }
@@ -171,13 +207,8 @@ exports.BeneficiaryHandler = {
                             }
                             else if (ageFromSlotRaw <= 18 && ageToSlotRaw > 18) {
                                 ageFromSlotRaw = 5;
-                                ageToSlotRaw = 18;
-                                values = values.filter(row =>  row["Age groups"] === teenagers || row["Age groups"] === adults);
-                            }
-                            else if (ageFromSlotRaw > 18 && ageToSlotRaw > 18) {
-                                ageFromSlotRaw = 18;
                                 ageToSlotRaw = 200;
-                                values = values.filter(row => row["Age groups"] === adults);
+                                values = values.filter(row =>  row["Age groups"] === teenagers || row["Age groups"] === adults);
                             }
                         }
                         // Under
