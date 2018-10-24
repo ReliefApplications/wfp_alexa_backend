@@ -42,7 +42,25 @@ exports.CoreHandler = {
                       });
                   })
                   .then((data) => {
-                      return data;
+                      let tmp = 0;
+                      let res = {};
+                      res.raw = data;
+                      if (data[0] && data[0]['Actual food']) {
+                          tmp += Utils.calculateSum(data, "Actual food");
+                          res.food = tmp;
+                          tmp = 0;
+                          tmp += Utils.calculateSum(data, "Actual CBT");
+                          res.cbt = tmp;
+                      }
+                      else if (data[0] && data[0]['Total Capacity Strengthening (USD)']) {
+                          tmp += Utils.calculateSum(data, "Total Capacity Strengthening (USD)");
+                          res.capacity_strengthening = tmp;
+                      }
+                      else if (data[0] && data[0]['Residence Satus']) {
+                          tmp += Utils.calculateSum(data, "Residence Satus");
+                          res.total = tmp;
+                      }
+                      return res;
                   }));
               });
 

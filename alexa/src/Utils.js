@@ -3,6 +3,7 @@ const request = require('request');
 const Constants = require('./Constants').Constants;
 const io = require('socket.io-client');
 const socket = io.connect('http://217.70.189.97:12112');
+// const webpush = require("web-push");
 
 exports.Utils = {
     /**
@@ -67,6 +68,32 @@ exports.Utils = {
     emitNewDash: function(userId, country, data) {
         socket.open();
         socket.emit('newDashboard', userId, country, JSON.stringify(data));
+        // webpush.setVapidDetails(
+        //     "mailto:axel.reliefapps@gmail.com",
+        //     process.env.PUBLIC_VAPID_KEY,
+        //     process.env.PRIVATE_VAPID_KEY
+        // );
+        // request(
+        //     {
+        //         method: "post",
+        //         uri: uriRequest,
+        //         body: data,
+        //         json: true,
+        //         headers: {'content-type': 'application/json'}
+        //     },
+        //     ((err, data) => {
+        //         if(err !== null){
+        //             console.error(err);
+        //         }
+        //         else {
+        //             console.log('Write successful !', data);
+        //         }
+        //     }));
+        // pushIntervalID = setInterval(() => {
+        //     webpush.sendNotification(subscription, JSON.stringify(testData))
+        //         .catch(() => clearInterval(pushIntervalID))
+        //     }, 30000)
+        // })
     },
     /**
      * This function is used in order to generate a random numer in order to choose which answer Alexa will say.
