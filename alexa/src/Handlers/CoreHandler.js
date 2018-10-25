@@ -24,7 +24,7 @@ exports.CoreHandler = {
               speechOutput = "Here is the home page."
           }
           else {
-              let answers = ["Displaying the data for ", "Tis is the dashboard for ", "Here's your data for "];
+              let answers = ["Displaying the data for ", "This is the dashboard for ", "Here's your data for "];
               speechOutput = answers[Utils.getPseudoRandomNumber(answers.length)] + wfpcountrySlotRaw;
           }
           return new Promise((resolve, reject) => {
@@ -58,6 +58,10 @@ exports.CoreHandler = {
                       }
                       else if (data[0] && data[0]['Residence Satus']) {
                           tmp += Utils.calculateSum(data, "Residence Satus");
+                          res.total = tmp;
+                      }
+                      else if (data[0] && data[0]['Number of beneficiaries']) {
+                          tmp += Utils.calculateSum(data, "Number of beneficiaries");
                           res.total = tmp;
                       }
                       return res;
