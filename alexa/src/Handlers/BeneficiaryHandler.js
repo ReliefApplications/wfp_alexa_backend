@@ -5,9 +5,12 @@ exports.BeneficiaryHandler = {
     GetFoodnCashDistribution:
           function(request, response) {
               // We go this deep to avoid checking for every synonyms in our functions and use the core value
-              let unitSlotRaw = request.slots.unit.resolution(0).first().name;
-              let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0).first().name;
-              let timeframeSlotRaw = request.slots.timeframe.resolution(0).first().name;
+              let unitSlotRaw = request.slots.unit.resolution(0) ?
+                  request.slots.unit.resolution(0).first().name : undefined;
+              let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
+                  request.slots.wfpcountry.resolution(0).first().name : undefined;
+              let timeframeSlotRaw = request.slots.timeframe.resolution(0) ?
+                  request.slots.timeframe.resolution(0).first().name : undefined;
               var speechOutput = "No data";
               return new Promise((resolve, reject) => {
                     Utils.requestGSheet('1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ', (results) => {
@@ -15,34 +18,29 @@ exports.BeneficiaryHandler = {
                         let columnName = "";
                         let middlePhrase = "";
                         let endPhrase = "";
-                        switch (timeframeSlotRaw.toLowerCase()) {
-                            case 'actual':
-                                switch (unitSlotRaw.toLowerCase()) {
-                                    case 'cash':
-                                        columnName="Actual CBT";
-                                        break;
-                                    case 'food':
-                                        columnName="Actual food";
-                                        break;
-                                }
-                                middlePhrase = " were given ";
-                                endPhrase = " until now ";
-                                break;
-                            case 'planned':
-                                switch (unitSlotRaw.toLowerCase()) {
-                                    case 'cash':
-                                        columnName="Planned CBT";
-                                        break;
-                                    case 'food':
-                                        columnName="Planned food";
-                                        break;
-                                }
-                                middlePhrase = " will be given ";
-                                break;
+                        if (unitSlotRaw) {
+                            switch (unitSlotRaw.toLowerCase()) {
+                                case 'cash':
+                                    columnName = "Actual CBT";
+                                    break;
+                                case 'food':
+                                    columnName = "Actual food";
+                                    break;
+                            }
+                        }
+                        if (timeframeSlotRaw) {
+                            switch (timeframeSlotRaw.toLowerCase()) {
+                                case 'actual':
+                                    endPhrase = " until now ";
+                                    middlePhrase = " were given ";
+                                    break;
+                                case 'planned':
+                                    middlePhrase = " will be given ";
+                                    break;
+                            }
                         }
                         let values = data.filter(row => row['Country'] === wfpcountrySlotRaw);
                         let displayedValue = Utils.calculateSum(values, columnName);
-                        speechOutput = "The " + wfpcountrySlotRaw + middlePhrase + displayedValue + " " + unitSlotRaw + endPhrase;
                         switch(Utils.getPseudoRandomNumber(3)) {
                             case 0:
                                 speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
@@ -180,7 +178,6 @@ exports.BeneficiaryHandler = {
                         }
                         // Between
                         if (ageFromSlotRaw && ageToSlotRaw) {
-                            console.log("between");
                             if (ageFromSlotRaw > 18) {
                                 ageFromSlotRaw = 18;
                                 ageToSlotRaw = 200;
@@ -213,7 +210,6 @@ exports.BeneficiaryHandler = {
                         }
                         // Under
                         else if (ageFromSlotRaw && !ageToSlotRaw) {
-                            console.log("under");
                             if (ageFromSlotRaw <= 5) {
                                 ageFromSlotRaw = 5;
                                 values = values.filter(row => row["Age groups"] === children);
@@ -228,7 +224,6 @@ exports.BeneficiaryHandler = {
                         }
                         // Over
                         else if (!ageFromSlotRaw && ageToSlotRaw) {
-                            console.log("over");
                             if (ageToSlotRaw > 18) {
                                 ageToSlotRaw = 18;
                                 values = values.filter(row => row["Age groups"] === adults);

@@ -96,6 +96,15 @@ exports.Utils = {
         // })
     },
     /**
+     * This function is used to send the focus to the dashboard
+     * @param userId string, Each user has a dashboard so only the user asking should see his dashboard change.
+     * @param number number, number of people
+     */
+    emitFocusDash: function(userId, number) {
+        socket.open();
+        socket.emit('focusDashboard', userId, number);
+    },
+    /**
      * This function is used in order to generate a random numer in order to choose which answer Alexa will say.
      * @param maxNumber number
      * @returns {number}

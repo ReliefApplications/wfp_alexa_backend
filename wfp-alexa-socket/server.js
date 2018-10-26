@@ -8,6 +8,12 @@ io.on('connection', (client) => {
                 client.broadcast.emit('dashboardChanges', userId, country, data);
                 client.disconnect(true);
         });
+        client.on('focusDashboard', (userId, number) => {
+                console.log('dashboardFocus', number);
+                client.emit('dashboardModified');
+                client.broadcast.emit('dashboardFocus', userId, number);
+                client.disconnect(true);
+        });
         client.on('error', function (err) {
                 console.error('received error from client:', client.id);
                 console.error(err);

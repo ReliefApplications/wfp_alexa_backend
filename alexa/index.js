@@ -2,6 +2,7 @@
 const AmazonHandler =       require('./src/Handlers/AmazonHandler').AmazonHandler;
 const BeneficiaryHandler =  require('./src/Handlers/BeneficiaryHandler').BeneficiaryHandler;
 const CoreHandler =         require('./src/Handlers/CoreHandler').CoreHandler;
+const DashboardHandler =    require('./src/Handlers/DashboardHandler').DashboardHandler;
 const applicationId = "amzn1.ask.skill.ecf62345-0300-4561-8bd0-3acdce03288b";
 
 exports.handler = function (alexaApp) {
@@ -35,6 +36,14 @@ exports.handler = function (alexaApp) {
 
     alexaApp.intent("GetBeneficiaries", function(request, response) {
         return BeneficiaryHandler.GetBeneficiaries(request, response);
+    });
+
+    alexaApp.intent("FocusDashboard", function(request, response) {
+        return DashboardHandler.FocusDashboard(request, response);
+    });
+
+    alexaApp.intent("SendReport", function(request, response) {
+        return CoreHandler.SendReport(request, response);
     });
 
     alexaApp.intent("AMAZON.FallbackIntent", function(request, response) {
