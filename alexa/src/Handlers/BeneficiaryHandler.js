@@ -7,70 +7,76 @@ exports.BeneficiaryHandler = {
               // We go this deep to avoid checking for every synonyms in our functions and use the core value
               let unitSlotRaw = request.slots.unit.resolution(0) ?
                   request.slots.unit.resolution(0).first().name : undefined;
+              let unitInputRaw = request.slots.unit.value;
               let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
                   request.slots.wfpcountry.resolution(0).first().name : undefined;
               let timeframeSlotRaw = request.slots.timeframe.resolution(0) ?
                   request.slots.timeframe.resolution(0).first().name : undefined;
-              var speechOutput = "No data";
+              let residenceStatusSlotRaw = request.slots.residenceStatus.resolution(0) ?
+                  request.slots.residenceStatus.resolution(0).first().name : undefined;
+              let speechOutput = "No data";
               return new Promise((resolve, reject) => {
                     Utils.requestGSheet('1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ', (results) => {
-                        let data = results.data;
-                        let columnName = "";
-                        let middlePhrase = "";
-                        let endPhrase = "";
-                        if (unitSlotRaw) {
-                            switch (unitSlotRaw.toLowerCase()) {
-                                case 'cash':
-                                    columnName = "Actual CBT";
-                                    break;
-                                case 'food':
-                                    columnName = "Actual food";
-                                    break;
-                            }
+                        let values = results.data;
+                        speechOutput = "";
+                        if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
+                            wfpcountrySlotRaw = " globally";
+                            values = results.data;
                         }
+                        else {
+                            values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                            wfpcountrySlotRaw = " in " + wfpcountrySlotRaw;
+                        }
+                        let columnNamePrefix = "";
+                        let columnNameSuffix = "";
                         if (timeframeSlotRaw) {
                             switch (timeframeSlotRaw.toLowerCase()) {
                                 case 'actual':
-                                    endPhrase = " until now ";
-                                    middlePhrase = " were given ";
+                                    columnNamePrefix = "Actual ";
                                     break;
                                 case 'planned':
-                                    middlePhrase = " will be given ";
+                                    columnNamePrefix = "Planned ";
                                     break;
                             }
                         }
-                        let values = data.filter(row => row['Country'] === wfpcountrySlotRaw);
-                        let displayedValue = Utils.calculateSum(values, columnName);
-                        switch(Utils.getPseudoRandomNumber(3)) {
-                            case 0:
-                                speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
-                                    + " distributed " + displayedValue + " of " + unitSlotRaw
-                                    + " in " +  wfpcountrySlotRaw;
-                                break;
-                            case 1:
-                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
-                                    (ageFromSlotRaw !== undefined ?
-                                            (ageToSlotRaw !== undefined ?
-                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
-                                                : " under " + ageFromSlotRaw + " years old")
-                                            : (ageToSlotRaw !== undefined ?
-                                                " over " + ageToSlotRaw + " years old"
-                                                : "")
-                                    )
-                                    + " received " + (unitSlotRaw ? unitSlotRaw : "") + " assistance in " +  wfpcountrySlotRaw;
-                                break;
-                            case 2:
-                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
-                                    (ageFromSlotRaw !== undefined ?
-                                            (ageToSlotRaw !== undefined ?
-                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
-                                                : " under " + ageFromSlotRaw + " years old")
-                                            : (ageToSlotRaw !== undefined ?
-                                                " over " + ageToSlotRaw + " years old"
-                                                : "")
-                                    )
-                                    + " got " + (unitSlotRaw ? unitSlotRaw : " helped ") + " in " +  wfpcountrySlotRaw;
-                                break;
+                        let displayedValue = 0;
+                        if (unitSlotRaw) {
+                            switch (unitSlotRaw.toLowerCase()) {
+                                case 'cash':
+                                    columnNameSuffix = "CBT";
+                                    break;
+                                case 'food':
+                                    columnNameSuffix = "food";
+                                    break;
+                            }
+                            if (!columnNamePrefix) {
+                                console.log(displayedValue, "Planned " + columnNameSuffix);
+                                displayedValue += Utils.calculateSum(values, "Planned " + columnNameSuffix);
+                                console.log(displayedValue, "Actual " + columnNameSuffix);
+                                displayedValue  += Utils.calculateSum(values, "Actual " + columnNameSuffix);
+                            }
+                            else {
+                                displayedValue  += Utils.calculateSum(values, columnNamePrefix + ' ' + columnNameSuffix);
+                            }
+                            speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
+                                + displayedValue + (unitSlotRaw === "food" ?
+                                    ((unitInputRaw.includes("food")) ?
+                                        " tons of food "
+                                        : " metric tons of " +
+                                        (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities "))
+                                    : " USD of cash and vouchers ")
+                                + (residenceStatusSlotRaw ? " to " + residenceStatusSlotRaw : '') + wfpcountrySlotRaw;
+                        }
+                        else {
+                            columnNameSuffix = "CBT";
+                            displayedValue += Utils.calculateSum(values, "Planned " + columnNameSuffix);
+                            displayedValue += Utils.calculateSum(values, "Actual " + columnNameSuffix);
+                            columnNameSuffix = "food";
+                            let displayedValue2 = Utils.calculateSum(values, "Planned " + columnNameSuffix);
+                            displayedValue2 += Utils.calculateSum(values, "Actual " + columnNameSuffix);
+                            speechOutput += "I do not know the total budget. We handed out " + displayedValue2
+                                + " tons of food and distributed " + displayedValue + " USD of cash and vouchers.";
                         }
                         resolve(speechOutput);
                     })
@@ -97,19 +103,26 @@ exports.BeneficiaryHandler = {
         function(request, response) {
             let programTypeSlotRaw = request.slots.programType.resolution(0).first().name;
             let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0).first().name;
-            speechOutput = "No data";
+            let speechOutput = "No data";
             return new Promise((resolve, reject) => {
                 Utils.requestGSheet('1Cvqf2nCLWCA5GWSochdk10HLtUQCx6TUVdOAbRi21Gg', (results) => {
-                    let data = results.data;
                     let columnName = "";
                     switch (programTypeSlotRaw.toLowerCase()) {
                         case 'capacity strengthening':
                             columnName="Total Capacity Strengthening (USD)";
                             break;
                     }
-                    let values = data.filter(row => row['CO'] === wfpcountrySlotRaw);
+                    let values = results.data;
+                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
+                        wfpcountrySlotRaw = " globally";
+                        values = results.data;
+                    }
+                    else {
+                        values = values.filter(row => row['CO'] === wfpcountrySlotRaw);
+                        wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
+                    }
                     let displayedValue = Utils.calculateSum(values, columnName);
-                    speechOutput = "The amount of " + programTypeSlotRaw + " in " + wfpcountrySlotRaw + " is " + displayedValue + " USD.";
+                    speechOutput = "The amount of " + programTypeSlotRaw + wfpcountrySlotRaw + " is " + displayedValue + " USD.";
                     resolve(speechOutput);
                 })
             })
@@ -155,8 +168,13 @@ exports.BeneficiaryHandler = {
                         let headerName = "";
                         // We are filtering according to the country the user typed
                         let values = results.data;
-                        if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() !== "Asia") {
+                        if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
+                            wfpcountrySlotRaw = " globally";
+                            values = results.data;
+                        }
+                        else {
                             values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                            wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
                         }
                         switch (disaggregationDataSlotRaw.toLowerCase()) {
                             case 'children':
@@ -236,13 +254,14 @@ exports.BeneficiaryHandler = {
                                 ageToSlotRaw = 0;
                             }
                         }
+                        console.log(values);
                         let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
                         if (wfpcountrySlotRaw === "Asia") {
                             wfpcountrySlotRaw = "globally";
                         }
                         if (displayedValue === 0) {
                             speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
-                                + " did not distribute " + (unitSlotRaw ? "any " + unitSlotRaw : "something") + " to " + disaggregationDataSlotRaw + " in " + wfpcountrySlotRaw;
+                                + " did not distribute " + (unitSlotRaw ? "any " + unitSlotRaw : "something") + " to " + disaggregationDataSlotRaw + wfpcountrySlotRaw;
                         }
                         else {
                             switch(Utils.getPseudoRandomNumber(3)) {
@@ -258,7 +277,7 @@ exports.BeneficiaryHandler = {
                                                 " over " + ageToSlotRaw + " years old"
                                                 : "")
                                         )
-                                        + " in " +  wfpcountrySlotRaw;
+                                        + wfpcountrySlotRaw;
                                     break;
                                 case 1:
                                     speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
@@ -270,7 +289,7 @@ exports.BeneficiaryHandler = {
                                                 " over " + ageToSlotRaw + " years old"
                                                 : "")
                                         )
-                                        + " received " + (unitSlotRaw ? unitSlotRaw : "") + " assistance in " +  wfpcountrySlotRaw;
+                                        + " received " + (unitSlotRaw ? unitSlotRaw : "assistance") + wfpcountrySlotRaw;
                                     break;
                                 case 2:
                                     speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
@@ -282,7 +301,7 @@ exports.BeneficiaryHandler = {
                                                 " over " + ageToSlotRaw + " years old"
                                                 : "")
                                         )
-                                        + " got " + (unitSlotRaw ? unitSlotRaw : " helped ") + " in " +  wfpcountrySlotRaw;
+                                        + " got " + (unitSlotRaw ? unitSlotRaw : " helped ") + wfpcountrySlotRaw;
                                     break;
                             }
                         }
@@ -294,8 +313,13 @@ exports.BeneficiaryHandler = {
                         let columnName = "";
                         let values = results.data;
                         // We are filtering according to the country the user typed
-                        if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() !== "asia") {
+                        if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
+                            wfpcountrySlotRaw = " globally";
+                            values = results.data;
+                        }
+                        else {
                             values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                            wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
                         }
                         if (typeSlotRaw) {
                             let types = [];
@@ -305,25 +329,14 @@ exports.BeneficiaryHandler = {
                                 }
                             });
                             let randomNumber = Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length);
-                            if (wfpcountrySlotRaw === "Asia") {
-                                wfpcountrySlotRaw = "globally";
+                            speechOutput =  "The types of beneficiaries ";
+                            if (randomNumber === 0) {
+                                speechOutput += Constants.TEXTS.subjects[0]+" has ";
                             }
                             else {
-                                wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
+                                speechOutput += Constants.TEXTS.subjects[randomNumber]+" have ";
                             }
-                            if (randomNumber%2 === 0) {
-                                speechOutput += Constants.TEXTS.subjects[randomNumber] + " served " + displayedValue + " " + residenceStatusSlotRaw + " " + wfpcountrySlotRaw;
-                            }
-                            else {
-                                if (randomNumber === 0) {
-                                    speechOutput += Constants.TEXTS.subjects[0]+" has ";
-                                }
-                                else {
-                                    speechOutput += Constants.TEXTS.subjects[randomNumber]+" have ";
-                                }
-                                speechOutput += displayedValue + " " + residenceStatusSlotRaw +  " " + wfpcountrySlotRaw;
-                            }
-                            speechOutput =  "The types of beneficiaries " + " has " + wfpcountrySlotRaw + (types.length === 0 ? " are none." : " are: " + types.join());
+                            speechOutput += wfpcountrySlotRaw + (types.length === 0 ? " are non existent." : " are: " + types.join());
                         }
                         else {
                             switch (residenceStatusSlotRaw.toLowerCase()) {
@@ -353,12 +366,6 @@ exports.BeneficiaryHandler = {
                                 speechOutput = "";
                             }
                             let randomNumber = Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length);
-                            if (wfpcountrySlotRaw === "Asia") {
-                                wfpcountrySlotRaw = "globally";
-                            }
-                            else {
-                                wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
-                            }
                             if (randomNumber%2 === 0) {
                                 speechOutput += Constants.TEXTS.subjects[randomNumber] + " served " + (displayedValue ? displayedValue : "no") + " " + residenceStatusSlotRaw + " " + wfpcountrySlotRaw;
                             }
@@ -369,7 +376,7 @@ exports.BeneficiaryHandler = {
                                 else {
                                     speechOutput += Constants.TEXTS.subjects[randomNumber]+" have ";
                                 }
-                                speechOutput += (displayedValue ? displayedValue : "no") + " " + residenceStatusSlotRaw + " " + wfpcountrySlotRaw;
+                                speechOutput += (displayedValue ? displayedValue : "no") + " " + residenceStatusSlotRaw + wfpcountrySlotRaw;
                             }
                         }
                         resolve(speechOutput);

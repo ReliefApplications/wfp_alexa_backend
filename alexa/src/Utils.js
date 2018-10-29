@@ -46,17 +46,18 @@ exports.Utils = {
      */
     calculateSum: function(values, columnName) {
         let result = 0;
-        values.forEach((val) => {
+        for (let i = 0; i<values.length; i++) {
             // If the number got spaces, it will be stored as a string and not a number
             // That's why we remove thoses spaces from the string to get the number
-            if (typeof val[columnName] === 'string') {
-                result += parseInt(val[columnName].replace(/\s/g, ''), 10);
+            if (typeof values[i][columnName] === 'string' && values[i][columnName] !== '') {
+                result += parseInt(values[i][columnName].replace(/\s/g, ''), 10);
             }
             // Otherwise it's a number so we just convert it into an int in order to avoid float numbers
-            else {
-                result += parseInt(val[columnName], 10);
+            else if (typeof values[i][columnName] === 'number') {
+                result += parseInt(values[i][columnName], 10);
             }
-        });
+            console.log(values[i], result);
+        }
         return result;
     },
     /**
