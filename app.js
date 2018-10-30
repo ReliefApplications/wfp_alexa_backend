@@ -1,14 +1,33 @@
 var express = require("express");
 var alexa = require("alexa-app");
+var cors = require('cors');
+const webpush = require("web-push");
+const publicVapidKey = process.env.PUBLIC_VAPID_KEY;
+const privateVapidKey = process.env.PRIVATE_VAPID_KEY;
 
 var PORT = process.env.PORT || 12113;
 var app = express();
+
+webpush.setVapidDetails('mailto:axel.reliefapps@gmail.com', publicVapidKey, privateVapidKey);
+app.use(require('body-parser').json());
+app.use(cors());
+app.post('/subscribe', (req, res) => {
+    const subscription = req.body;
+    res.status(201).json({data: { success: true }});
+    const payload = JSON.stringify({
+        title: "This is a notification test",
+        message: "Bonjour le dashboard"+new Date().getMilliseconds()
+    });
+    webpush.sendNotification(subscription, payload)
+        .catch(error => {
+        console.error(error.stack);
+    });
+});
 
 // You choose here what will be the endpoint for Alexa. If empty it will be the root: '/'
 var alexaApp = new alexa.app("");
 alexaApp.express({
     expressApp: app,
-    //router: express.Router(),
 
     // verifies requests come from amazon alexa. Must be enabled for production.
     // You can disable this if you're running a dev environment and want to POST
@@ -21,5 +40,6 @@ alexaApp.express({
 });
 
 var alexa = require('./alexa/index.js').handler(alexaApp);
+app.use(require('express-static')('./'));
 
 app.listen(PORT, () => console.log("Listening on port " + PORT + "."));
