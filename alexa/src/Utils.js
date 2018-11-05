@@ -56,7 +56,6 @@ exports.Utils = {
             else if (typeof values[i][columnName] === 'number') {
                 result += parseInt(values[i][columnName], 10);
             }
-            console.log(values[i], result);
         }
         return result;
     },
