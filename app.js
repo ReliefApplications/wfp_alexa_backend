@@ -25,7 +25,7 @@ app.post('/subscribe', (req, res) => {
 });
 
 // You choose here what will be the endpoint for Alexa. If empty it will be the root: '/'
-var alexaApp = new alexa.app("");
+var alexaApp = new alexa.app("/alexa");
 alexaApp.express({
     expressApp: app,
 
