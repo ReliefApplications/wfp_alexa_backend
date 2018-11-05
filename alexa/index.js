@@ -38,6 +38,11 @@ exports.handler = function (alexaApp) {
         return BeneficiaryHandler.GetBeneficiaries(request, response);
     });
 
+
+    alexaApp.intent("RatioCalculation", function(request, response) {
+        return BeneficiaryHandler.RatioCalculation(request, response);
+    });
+
     alexaApp.intent("FocusDashboard", function(request, response) {
         return DashboardHandler.FocusDashboard(request, response);
     });

@@ -21,7 +21,7 @@ exports.BeneficiaryHandler = {
                     let values = results.data;
                     speechOutput = "";
                     if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
-                        wfpcountrySlotRaw = " globally";
+                        wfpcountrySlotRaw = " in Asia";
                         values = results.data;
                     }
                     else {
@@ -33,10 +33,10 @@ exports.BeneficiaryHandler = {
                     if (timeframeSlotRaw) {
                         switch (timeframeSlotRaw.toLowerCase()) {
                             case 'actual':
-                                columnNamePrefix = "Actual ";
+                                columnNamePrefix = "Actual";
                                 break;
                             case 'planned':
-                                columnNamePrefix = "Planned ";
+                                columnNamePrefix = "Planned";
                                 break;
                         }
                     }
@@ -51,33 +51,68 @@ exports.BeneficiaryHandler = {
                                 break;
                         }
                         if (!columnNamePrefix) {
-                            console.log(displayedValue, "Planned " + columnNameSuffix);
                             displayedValue += Utils.calculateSum(values, "Planned " + columnNameSuffix);
-                            console.log(displayedValue, "Actual " + columnNameSuffix);
                             displayedValue  += Utils.calculateSum(values, "Actual " + columnNameSuffix);
+                            speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
+                                + displayedValue + (unitSlotRaw === "food" ?
+                                    ((unitInputRaw.includes("food")) ?
+                                        " tons of food "
+                                        : " metric tons of " +
+                                        (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities "))
+                                    : " USD of cash and vouchers ")
+                                + (residenceStatusSlotRaw ? " to " + residenceStatusSlotRaw : '') + wfpcountrySlotRaw;
                         }
                         else {
                             displayedValue  += Utils.calculateSum(values, columnNamePrefix + ' ' + columnNameSuffix);
+                            if (columnNamePrefix.toLowerCase() === "planned") {
+                                speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                    + (Utils.getPseudoRandomNumber(2) === 0 ? " will distribute " : " will hand out ")
+                                    + displayedValue + (unitSlotRaw === "food" ?
+                                        ((unitInputRaw.includes("food")) ?
+                                            " tons of food "
+                                            : " metric tons of " +
+                                            (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities "))
+                                        : " USD of cash and vouchers ")
+                                    + (residenceStatusSlotRaw ? " to " + residenceStatusSlotRaw : '') + wfpcountrySlotRaw;
+                            }
+                            else {
+                                speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                    + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
+                                    + displayedValue + (unitSlotRaw === "food" ?
+                                        ((unitInputRaw.includes("food")) ?
+                                            " tons of food "
+                                            : " metric tons of " +
+                                            (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities "))
+                                        : " USD of cash and vouchers ")
+                                    + (residenceStatusSlotRaw ? " to " + residenceStatusSlotRaw : '') + wfpcountrySlotRaw
+                                    + " until now.";
+                            }
                         }
-                        speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
-                            + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
-                            + displayedValue + (unitSlotRaw === "food" ?
-                                ((unitInputRaw.includes("food")) ?
-                                    " tons of food "
-                                    : " metric tons of " +
-                                    (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities "))
-                                : " USD of cash and vouchers ")
-                            + (residenceStatusSlotRaw ? " to " + residenceStatusSlotRaw : '') + wfpcountrySlotRaw;
                     }
                     else {
-                        columnNameSuffix = "CBT";
-                        displayedValue += Utils.calculateSum(values, "Planned " + columnNameSuffix);
-                        displayedValue += Utils.calculateSum(values, "Actual " + columnNameSuffix);
+                        speechOutput += "I do not know the total budget. " +
+                            Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)];
                         columnNameSuffix = "food";
-                        let displayedValue2 = Utils.calculateSum(values, "Planned " + columnNameSuffix);
-                        displayedValue2 += Utils.calculateSum(values, "Actual " + columnNameSuffix);
-                        speechOutput += "I do not know the total budget. We handed out " + displayedValue2
-                            + " tons of food and distributed " + displayedValue + " USD of cash and vouchers";
+                        let columnNameSuffix2 = "CBT";
+                        let displayedValue2 = 0;
+                        if (!columnNamePrefix) {
+                            displayedValue += Utils.calculateSum(values, "Planned " + columnNameSuffix);
+                            displayedValue  += Utils.calculateSum(values, "Actual " + columnNameSuffix);
+                            speechOutput += (Utils.getPseudoRandomNumber(2) === 0 ? " will distribute in total " : " will hand out in total ")
+                            + displayedValue + " tons of food and distributed ";
+                            displayedValue2 += Utils.calculateSum(values, "Planned " + columnNameSuffix2);
+                            displayedValue2  += Utils.calculateSum(values, "Actual " + columnNameSuffix2);
+                        }
+                        else {
+                            displayedValue  += Utils.calculateSum(values, columnNamePrefix + ' ' + columnNameSuffix);
+                            speechOutput += (columnNamePrefix.toLowerCase() === "planned" ?
+                                (Utils.getPseudoRandomNumber(2) === 0 ? " will distribute " : " will hand out ")
+                                : (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out "))
+                            + displayedValue + " tons of food and distributed ";
+                            displayedValue2  += Utils.calculateSum(values, columnNamePrefix + ' ' + columnNameSuffix);
+                        }
+                        speechOutput += displayedValue2 + " USD of cash and vouchers" + wfpcountrySlotRaw;
                     }
                     if (yearSlotRaw) {
                         if (yearSlotRaw === "2017") {
@@ -108,6 +143,62 @@ exports.BeneficiaryHandler = {
                     });
         }
     ,
+    RatioCalculation:
+        function(request, response) {
+            // We go this deep to avoid checking for every synonyms in our functions and use the core value
+            let unitSlotRaw = request.slots.unit.resolution(0) ?
+                request.slots.unit.resolution(0).first().name : undefined;
+            let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
+                request.slots.wfpcountry.resolution(0).first().name : undefined;
+            let speechOutput = "No data";
+            return new Promise((resolve, reject) => {
+                Utils.requestGSheet('1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ', (results) => {
+                    let values = results.data;
+                    speechOutput = "";
+                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
+                        wfpcountrySlotRaw = " in Asia";
+                        values = results.data;
+                    }
+                    else {
+                        values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                        wfpcountrySlotRaw = " in " + wfpcountrySlotRaw;
+                    }
+                    let columnNameSuffix = "";
+                    switch (unitSlotRaw.toLowerCase()) {
+                        case 'cash':
+                            columnNameSuffix = "CBT";
+                            break;
+                        case 'food':
+                            columnNameSuffix = "food";
+                            break;
+                    }
+                    let displayedValue = Utils.calculateSum(values, "Actual " + columnNameSuffix)/Utils.calculateSum(values, "Planned " + columnNameSuffix)*100;
+                    speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                        + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
+                        + Math.round(displayedValue) + "% of " + (unitSlotRaw === "food" ?
+                            (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities ")
+                            : " USD of cash and vouchers ") + wfpcountrySlotRaw;
+                    resolve(speechOutput);
+                })
+            })
+                .then((result) => {
+                        response.say(result);
+                        response.reprompt(result);
+                        response.card('Food and cash ratio !', result);
+                        response.shouldEndSession(false);
+                        return response;
+                    },
+                    (error) => {
+                        console.error('err', error);
+                        speechOutput = "There was an issue whith the request about the food and cash ratio";
+                        response.say(speechOutput);
+                        response.reprompt(speechOutput);
+                        response.card('RatioCalculation error !', speechOutput);
+                        response.shouldEndSession(false);
+                        return response;
+                    });
+        }
+    ,
     GetTransferData:
         function(request, response) {
             let programTypeSlotRaw = request.slots.programType.resolution(0).first().name;
@@ -124,7 +215,7 @@ exports.BeneficiaryHandler = {
                     }
                     let values = results.data;
                     if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
-                        wfpcountrySlotRaw = " globally";
+                        wfpcountrySlotRaw = " in Asia";
                         values = results.data;
                     }
                     else {
@@ -188,7 +279,7 @@ exports.BeneficiaryHandler = {
                         // We are filtering according to the country the user typed
                         let values = results.data;
                         if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
-                            wfpcountrySlotRaw = " globally";
+                            wfpcountrySlotRaw = " in Asia";
                             values = results.data;
                         }
                         else {
@@ -273,10 +364,9 @@ exports.BeneficiaryHandler = {
                                 ageToSlotRaw = 0;
                             }
                         }
-                        console.log(values);
                         let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
                         if (wfpcountrySlotRaw === "Asia") {
-                            wfpcountrySlotRaw = "globally";
+                            wfpcountrySlotRaw = "in Asia";
                         }
                         if (displayedValue === 0) {
                             speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
@@ -341,7 +431,7 @@ exports.BeneficiaryHandler = {
                         let values = results.data;
                         // We are filtering according to the country the user typed
                         if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
-                            wfpcountrySlotRaw = " globally";
+                            wfpcountrySlotRaw = " in Asia";
                             values = results.data;
                         }
                         else {
@@ -407,12 +497,11 @@ exports.BeneficiaryHandler = {
                             }
                         }
                         if (yearSlotRaw) {
-                            console.log(yearSlotRaw);
                             if (yearSlotRaw === "2017") {
                                 speechOutput += " in 2017."
                             }
                             else {
-                                speechOutput += " in 2017 since this is the only year I have data for."
+                                speechOutput += "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
                             }
                         }
                         resolve(speechOutput);
