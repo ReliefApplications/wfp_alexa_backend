@@ -32,11 +32,12 @@
                         }
                     ],
                     "samples": [
+                        "Pull out the information for {wfpcountry}  and show it to me ",
+                        "Can I see the data on screen for {wfpcountry}",
+                        "Get me the data for {wfpcountry}",
+                        "Display the dashboard for {wfpcountry}",
                         "Show me the home page",
                         "Go back to the home page",
-                        "show me the data for {wfpcountry}",
-                        "show me the informations for {wfpcountry}",
-                        "show me the info for {wfpcountry}",
                         "show me the dashboard for {wfpcountry} "
                     ]
                 },
@@ -92,53 +93,76 @@
                         {
                             "name": "disaggregationData",
                             "type": "DISSAGGREGATIONDATA"
-                        }
-                    ],
-                    "samples": [
-                        "what is the number of {residenceStatus} in {wfpcountry} ",
-                        "How many {residenceStatus} WFP serves in {wfpcountry}",
-                        "give me the number of {residenceStatus} in {wfpcountry}",
-                        "How many {residenceStatus} ",
-                        "How many {residenceStatus} in {wfpcountry}"
-                    ]
-                },
-                {
-                    "name": "GetBeneficiariesDisaggregated",
-                    "slots": [
-                        {
-                            "name": "wfpcountry",
-                            "type": "WFPCOUNTRY"
                         },
                         {
-                            "name": "disaggregationData",
-                            "type": "DISSAGGREGATIONDATA"
+                            "name": "WFP",
+                            "type": "WFP"
+                        },
+                        {
+                            "name": "unit",
+                            "type": "UNIT"
+                        },
+                        {
+                            "name": "type",
+                            "type": "TYPE"
+                        },
+                        {
+                            "name": "age_from",
+                            "type": "AMAZON.NUMBER"
+                        },
+                        {
+                            "name": "age_to",
+                            "type": "AMAZON.NUMBER"
                         }
                     ],
                     "samples": [
-                        "Tell me the number beneficiaries in {wfpcountry} disaggregated by {disaggregationData} ",
-                        "How many {disaggregationData} is WFP targeting in {wfpcountry}"
+                        "How many {disaggregationData} over {age_to} received direct assistance in {wfpcountry}",
+                        "How many {disaggregationData} over {age_to} did {WFP} directly assist in {wfpcountry}",
+                        "How many {disaggregationData} over {age_to} did {WFP} distribute {unit} in {wfpcountry}",
+                        "How many {disaggregationData} over {age_to} did {WFP} serve in {wfpcountry}",
+                        "How many {disaggregationData} over {age_to} got {unit} in {wfpcountry}",
+                        "How many {disaggregationData} got {unit} in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} got {unit} in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old got {unit} in {wfpcountry}",
+                        "How many {disaggregationData} received direct assistance in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} received direct assistance in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old received direct assistance in {wfpcountry}",
+                        "How many {disaggregationData} did {WFP} directly assist in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} did {WFP} directly assist in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old did {WFP} directly assist in {wfpcountry}",
+                        "How many {disaggregationData} did {WFP} distribute {unit} in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} did {WFP} distribute {unit} in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old did {WFP} distribute {unit} in {wfpcountry}",
+                        "How many {residenceStatus} did {WFP} assist directly in {wfpcountry}",
+                        "How many {residenceStatus} did {WFP} assist in {wfpcountry}",
+                        "What {type} of {residenceStatus} do we have in {wfpcountry} ",
+                        "How many {disaggregationData} did {WFP} serve in {wfpcountry}",
+                        "How many {disaggregationData} under {age_from} did {WFP} serve in {wfpcountry}",
+                        "How many {disaggregationData} from {age_from} to {age_to} years old did {WFP} serve in {wfpcountry}",
+                        "How many {residenceStatus} received {unit} in {wfpcountry}",
+                        "What's the number of {residenceStatus} that got assisted in {wfpcountry}",
+                        "How many {residenceStatus} got {unit} in {wfpcountry}",
+                        "{residenceStatus} in {wfpcountry}",
+                        "How many {residenceStatus} did {WFP} serve in {wfpcountry}",
+                        "How many beneficiaries is WFP targeting in {wfpcountry} by {disaggregationData}",
+                        "Tell me the number beneficiaries in {wfpcountry} disaggregated by {disaggregationData}"
                     ]
                 }
             ],
             "types": [
                 {
-                    "name": "INDICATOR",
-                    "values": [
-                        {
-                            "name": {
-                                "value": "OUTPUTS"
-                            }
-                        },
-                        {
-                            "name": {
-                                "value": "INDICATORS"
-                            }
-                        }
-                    ]
-                },
-                {
                     "name": "WFPCOUNTRY",
                     "values": [
+                        {
+                            "name": {
+                                "value": "Asia",
+                                "synonyms": [
+                                    "the asia pacific region",
+                                    "sum",
+                                    "region"
+                                ]
+                            }
+                        },
                         {
                             "name": {
                                 "value": "Bangladesh"
@@ -181,8 +205,9 @@
                         },
                         {
                             "name": {
-                                "value": "Korea",
+                                "value": "DPRK",
                                 "synonyms": [
+                                    "Korea",
                                     "D P R K"
                                 ]
                             }
@@ -259,14 +284,25 @@
                     "values": [
                         {
                             "name": {
-                                "value": "Metric tons of food"
+                                "value": "food",
+                                "synonyms": [
+                                    "food assistance",
+                                    "commodities",
+                                    "metric tons",
+                                    "tons"
+                                ]
                             }
                         },
                         {
                             "name": {
-                                "value": "USD",
+                                "value": "cash",
                                 "synonyms": [
-                                    "U S dollars"
+                                    "U S Dollars",
+                                    "cash based transfers",
+                                    "cash and vouchers",
+                                    "CBT",
+                                    "C&V",
+                                    "USD"
                                 ]
                             }
                         }
@@ -277,7 +313,13 @@
                     "values": [
                         {
                             "name": {
-                                "value": "Capacity strengthening"
+                                "value": "Capacity strengthening",
+                                "synonyms": [
+                                    "capacity building",
+                                    "strengthening the capacity of the government",
+                                    "government capacity building",
+                                    "technical assistance"
+                                ]
                             }
                         }
                     ]
@@ -302,12 +344,24 @@
                         },
                         {
                             "name": {
-                                "value": "IDP"
+                                "value": "IDP",
+                                "synonyms": [
+                                    "Internally Displaced",
+                                    "Internally Displaced People",
+                                    "IDPs"
+                                ]
                             }
                         },
                         {
                             "name": {
-                                "value": "beneficiaries"
+                                "value": "beneficiaries",
+                                "synonyms": [
+                                    "people",
+                                    "men and women",
+                                    "adults and children",
+                                    "households",
+                                    "participants"
+                                ]
                             }
                         }
                     ]
@@ -315,16 +369,6 @@
                 {
                     "name": "DISSAGGREGATIONDATA",
                     "values": [
-                        {
-                            "name": {
-                                "value": "children"
-                            }
-                        },
-                        {
-                            "name": {
-                                "value": "adults"
-                            }
-                        },
                         {
                             "name": {
                                 "value": "male",
@@ -339,6 +383,43 @@
                                 "synonyms": [
                                     "women"
                                 ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "adults"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "gender",
+                                "synonyms": [
+                                    "sex"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "WFP",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "WFP",
+                                "synonyms": [
+                                    "we",
+                                    "the World Food Programme"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "TYPE",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "type"
                             }
                         }
                     ]

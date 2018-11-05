@@ -1,19 +1,27 @@
 {
-  "name": "alexa-skill-kit-sdk-factskill",
+  "name": "wfp-alexa-backend",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "alexa-sdk": "^1.0.25",
+    "alexa-app": "^4.2.2",
     "babyparse": "^0.4.6",
+    "dotenv": "^6.1.0",
     "express": "^4.16.3",
     "request": "^2.88.0",
-    "serverless-http": "^1.6.0"
+    "socket.io": "^2.1.1",
+    "socket.io-client": "^2.1.1",
+    "ssml-builder": "^0.4.3"
   },
   "description": "The .json of the Alexa skills kit is saved in vui.json.",
   "main": "index.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-shell": "latest"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rm -rf dist && tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
