@@ -1,4 +1,5 @@
 const Constants = require('../Constants').Constants;
+const webpush = require("web-push");
 const Utils = require('../Utils').Utils;
 
 exports.CoreHandler = {
@@ -82,6 +83,16 @@ exports.CoreHandler = {
               response.reprompt(result.say);
               response.card('Dashboard !', result.say);
               response.shouldEndSession(false);
+
+              webpush.setVapidDetails('mailto:axel.reliefapps@gmail.com', Constants.PUBLICVAPIDKEY, Constants.PRIVATEVAPIDKEY);
+              const payload = JSON.stringify({
+                  title: "This is a notification test",
+                  message: "Bonjour le dashboard"+new Date().getMilliseconds()
+              });
+              webpush.sendNotification(Constants.SUBSCRIPTION, payload)
+                  .catch(error => {
+                      console.error(error.stack);
+                  });
               return response;
                     },
                     (error) => {

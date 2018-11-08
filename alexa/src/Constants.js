@@ -8,5 +8,11 @@ exports.Constants = {
   ENDPOINTS: {
     googleEndPoint: 'https://docs.google.com/spreadsheets/d/',
     googleSheetEndUrl: '/gviz/tq?tqx=out:csv'
-  }
+  },
+
+  SUBSCRIPTION: {},
+
+  PUBLICVAPIDKEY : process.env.PUBLIC_VAPID_KEY,
+
+  PRIVATEVAPIDKEY: process.env.PRIVATE_VAPID_KEY
 };

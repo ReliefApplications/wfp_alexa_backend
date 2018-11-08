@@ -99,7 +99,7 @@ exports.BeneficiaryHandler = {
                         if (!columnNamePrefix) {
                             displayedValue += Utils.calculateSum(values, "Planned " + columnNameSuffix);
                             displayedValue  += Utils.calculateSum(values, "Actual " + columnNameSuffix);
-                            speechOutput += (Utils.getPseudoRandomNumber(2) === 0 ? " will distribute in total " : " will hand out in total ")
+                            speechOutput += (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
                             + displayedValue + " tons of food and distributed ";
                             displayedValue2 += Utils.calculateSum(values, "Planned " + columnNameSuffix2);
                             displayedValue2  += Utils.calculateSum(values, "Actual " + columnNameSuffix2);
@@ -119,7 +119,7 @@ exports.BeneficiaryHandler = {
                             speechOutput += " in 2017."
                         }
                         else {
-                            speechOutput += " in 2017 since this is the only year I have data for."
+                            speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
                         }
                     }
                     resolve(speechOutput);
@@ -229,7 +229,7 @@ exports.BeneficiaryHandler = {
                             speechOutput += " in 2017."
                         }
                         else {
-                            speechOutput += " in 2017 since this is the only year I have data for."
+                            speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
                         }
                     }
                     resolve(speechOutput);
@@ -419,7 +419,7 @@ exports.BeneficiaryHandler = {
                                 speechOutput += " in 2017."
                             }
                             else {
-                                speechOutput += " in 2017 since this is the only year I have data for."
+                                speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
                             }
                         }
                         resolve(speechOutput);
@@ -501,7 +501,7 @@ exports.BeneficiaryHandler = {
                                 speechOutput += " in 2017."
                             }
                             else {
-                                speechOutput += "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
+                                speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
                             }
                         }
                         resolve(speechOutput);

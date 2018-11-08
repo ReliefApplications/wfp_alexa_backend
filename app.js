@@ -1,9 +1,7 @@
 var express = require("express");
 var alexa = require("alexa-app");
 var cors = require('cors');
-const webpush = require("web-push");
-const publicVapidKey = process.env.PUBLIC_VAPID_KEY;
-const privateVapidKey = process.env.PRIVATE_VAPID_KEY;
+const Constants = require('./alexa/src/Constants').Constants;
 
 var PORT = process.env.PORT || 12113;
 var app = express();
@@ -23,20 +21,11 @@ alexaApp.express({
     debug: false
 });
 
-webpush.setVapidDetails('mailto:axel.reliefapps@gmail.com', publicVapidKey, privateVapidKey);
 app.use(require('body-parser').json());
 app.use(cors());
 app.post('/subscribe', (req, res) => {
-    const subscription = req.body;
+    Constants.SUBSCRIPTION = req.body;
     res.status(201).json({data: { success: true }});
-    const payload = JSON.stringify({
-        title: "This is a notification test",
-        message: "Bonjour le dashboard"+new Date().getMilliseconds()
-    });
-    webpush.sendNotification(subscription, payload)
-        .catch(error => {
-            console.error(error.stack);
-        });
 });
 
 var alexa = require('./alexa/index.js').handler(alexaApp);
