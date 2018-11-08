@@ -86,8 +86,8 @@ exports.CoreHandler = {
 
               webpush.setVapidDetails('mailto:axel.reliefapps@gmail.com', Constants.PUBLICVAPIDKEY, Constants.PRIVATEVAPIDKEY);
               const payload = JSON.stringify({
-                  title: "This is a notification test",
-                  message: "Bonjour le dashboard"+new Date().getMilliseconds()
+                  title: "Your dashboard is ready",
+                  message: "Go to the site to see the data"
               });
               webpush.sendNotification(Constants.SUBSCRIPTION, payload)
                   .catch(error => {

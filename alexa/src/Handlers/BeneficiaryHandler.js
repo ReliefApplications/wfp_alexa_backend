@@ -156,12 +156,12 @@ exports.BeneficiaryHandler = {
                     let values = results.data;
                     speechOutput = "";
                     if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
-                        wfpcountrySlotRaw = " in Asia";
+                        wfpcountrySlotRaw = " for the Asia";
                         values = results.data;
                     }
                     else {
                         values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
-                        wfpcountrySlotRaw = " in " + wfpcountrySlotRaw;
+                        wfpcountrySlotRaw = " for " + wfpcountrySlotRaw;
                     }
                     let columnNameSuffix = "";
                     switch (unitSlotRaw.toLowerCase()) {
@@ -175,8 +175,8 @@ exports.BeneficiaryHandler = {
                     let displayedValue = Utils.calculateSum(values, "Actual " + columnNameSuffix)/Utils.calculateSum(values, "Planned " + columnNameSuffix)*100;
                     speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
                         + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
-                        + Math.round(displayedValue) + "% of " + (unitSlotRaw === "food" ?
-                            (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities ")
+                        + Math.round(displayedValue) + "% of the planned" + (unitSlotRaw === "food" ?
+                            " food assistance "
                             : " USD of cash and vouchers ") + wfpcountrySlotRaw;
                     resolve(speechOutput);
                 })
