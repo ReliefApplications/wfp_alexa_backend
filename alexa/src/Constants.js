@@ -7,7 +7,7 @@ exports.Constants = {
 
   ENDPOINTS: {
     googleEndPoint: 'https://docs.google.com/spreadsheets/d/',
-    googleSheetEndUrl: '/gviz/tq?tqx=out:csv'
+    googleSheetEndUrl: '/gviz/tq?tqx=out:csv&sheet='
   },
 
   SUBSCRIPTION: {},

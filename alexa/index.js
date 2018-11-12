@@ -23,7 +23,7 @@ exports.handler = function (alexaApp) {
     });
 
     alexaApp.intent("ShowDashboard", function(request, response) {
-        return CoreHandler.ShowDashboard(request, response);
+        return DashboardHandler.ShowDashboard(request, response);
     });
 
     alexaApp.intent("GetFoodnCashDistribution", function(request, response) {

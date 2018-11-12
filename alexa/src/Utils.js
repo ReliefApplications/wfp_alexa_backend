@@ -2,7 +2,7 @@ const Baby = require('babyparse');
 const request = require('request');
 const Constants = require('./Constants').Constants;
 const io = require('socket.io-client');
-const socket = io.connect('http://217.70.189.97:12112');
+const socket = io.connect('https://wfp-alexa-socket.test.humanitarian.tech/');
 // const webpush = require("web-push");
 
 exports.Utils = {
@@ -14,9 +14,10 @@ exports.Utils = {
                         we need the key for the file we will fetch into.
                         You can find it between de slashes after "d" and before "edit"
      * @param callback function, This function will be executed before returning the value
+     * @param sheetname string, Since a CSV export is done on only one sheet, we can specify the sheetname
      */
-    requestGSheet: function (filekey, callback) {
-        let uriRequest = Constants.ENDPOINTS.googleEndPoint + filekey + Constants.ENDPOINTS.googleSheetEndUrl;
+    requestGSheet: function (filekey, callback, sheetname) {
+        let uriRequest = Constants.ENDPOINTS.googleEndPoint + filekey + Constants.ENDPOINTS.googleSheetEndUrl + (sheetname ? sheetname : '');
         return new Promise((resolve, reject) => {
             request(
                 {uri: uriRequest},
