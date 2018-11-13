@@ -3,7 +3,6 @@ const request = require('request');
 const Constants = require('./Constants').Constants;
 const io = require('socket.io-client');
 const socket = io.connect('https://wfp-alexa-socket.test.humanitarian.tech/');
-// const webpush = require("web-push");
 
 exports.Utils = {
     /**

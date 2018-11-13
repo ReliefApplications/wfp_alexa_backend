@@ -1,3 +1,5 @@
+const Constants = require('../Constants').Constants;
+const webpush = require("web-push");
 const Utils = require('../Utils').Utils;
 
 exports.DashboardHandler = {
@@ -69,7 +71,6 @@ exports.DashboardHandler = {
                             let tmp = 0;
                             let res = {};
                             res.raw = data;
-                            console.log(data);
                             if (data[0] && data[0]['Actual food']) {
                                 tmp += Utils.calculateSum(data, "Actual food");
                                 res.food = tmp;

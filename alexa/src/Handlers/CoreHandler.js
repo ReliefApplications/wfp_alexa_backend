@@ -1,6 +1,4 @@
 const Constants = require('../Constants').Constants;
-const webpush = require("web-push");
-const Utils = require('../Utils').Utils;
 
 exports.CoreHandler = {
   'LaunchRequest':
