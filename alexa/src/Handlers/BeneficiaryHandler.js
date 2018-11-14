@@ -163,21 +163,34 @@ exports.BeneficiaryHandler = {
                         values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
                         wfpcountrySlotRaw = " for " + wfpcountrySlotRaw;
                     }
-                    let columnNameSuffix = "";
-                    switch (unitSlotRaw.toLowerCase()) {
-                        case 'cash':
-                            columnNameSuffix = "CBT";
-                            break;
-                        case 'food':
-                            columnNameSuffix = "food";
-                            break;
+                    if (unitSlotRaw) {
+                        let columnNameSuffix = "";
+                        switch (unitSlotRaw.toLowerCase()) {
+                            case 'cash':
+                                columnNameSuffix = "CBT";
+                                break;
+                            case 'food':
+                                columnNameSuffix = "food";
+                                break;
+                        }
+                        let displayedValue = Utils.calculateSum(values, "Actual " + columnNameSuffix) / Utils.calculateSum(values, "Planned " + columnNameSuffix) * 100;
+                        speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                            + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
+                            + Math.round(displayedValue) + "% of the planned" + (unitSlotRaw === "food" ?
+                                " food assistance "
+                                : " USD of cash and vouchers ") + wfpcountrySlotRaw;
+                    } else if (wfpcountrySlotRaw === " for the Asia") {
+                        let nbCountries = 0;
+                        let countries = [];
+                        values.filter((row) => {
+                            if (!countries.includes(row['Country'])) {
+                                countries.push(row['Country']);
+                                nbCountries++;
+                            }
+                        });
+                        let randomNumber = Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length);
+                        speechOutput += Constants.TEXTS.subjects[randomNumber]+" serve " + nbCountries + " countries in the Asia Pacific region";
                     }
-                    let displayedValue = Utils.calculateSum(values, "Actual " + columnNameSuffix)/Utils.calculateSum(values, "Planned " + columnNameSuffix)*100;
-                    speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
-                        + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
-                        + Math.round(displayedValue) + "% of the planned" + (unitSlotRaw === "food" ?
-                            " food assistance "
-                            : " USD of cash and vouchers ") + wfpcountrySlotRaw;
                     resolve(speechOutput);
                 })
             })

@@ -1,9 +1,9 @@
 exports.AmazonHandler = {
     FallbackIntent:
         function(request, response) {
-            let speechOutput = 'Don\'t push your luck. For this type of information WFP will need to upgrade its system';
-            response.say(speechOutput);
-            response.reprompt(speechOutput);
+            // let speechOutput = 'Don\'t push your luck. For this type of information WFP will need to upgrade its system';
+            response.say();
+            response.reprompt();
             response.shouldEndSession(false);
             return response;
         }

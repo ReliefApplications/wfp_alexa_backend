@@ -74,9 +74,9 @@ exports.Utils = {
      * @param userId string, Each user has a dashboard so only the user asking should see his dashboard change.
      * @param number number, number of people
      */
-    emitFocusDash: function(userId, number) {
+    emitFocusDash: function(userId, column, country, data) {
         socket.open();
-        socket.emit('focusDashboard', userId, number);
+        socket.emit('focusDashboard', userId, column, country, JSON.stringify(data));
     },
     /**
      * This function is used in order to generate a random numer in order to choose which answer Alexa will say.

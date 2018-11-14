@@ -6,11 +6,11 @@ exports.DashboardHandler = {
     'FocusDashboard':
     // This is triggered when a user ask for some data to be focused in the dashboard
         function(request, response) {
-            let number = request.slots.number.value;
+            let column = request.slots.column.value;
             let userId = request.userId;
 
             let speechOutput = "The data is now focused";
-            Utils.emitFocusDash(userId, number);
+            Utils.emitFocusDash(userId, column, "", {});
             response.say(speechOutput);
             response.reprompt(speechOutput);
             response.card('Dashboard !', speechOutput);
@@ -24,6 +24,8 @@ exports.DashboardHandler = {
             let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
                 request.slots.wfpcountry.resolution(0).first().name : undefined;
             let userId = request.userId;
+            let column = request.slots.column.value;
+
 
             let speechOutput = "";
             if (wfpcountrySlotRaw === undefined) {
@@ -106,7 +108,6 @@ exports.DashboardHandler = {
             })
                 .then((result) => {
                         let country = wfpcountrySlotRaw ? wfpcountrySlotRaw : 'Global';
-                        Utils.emitNewDash(userId, country, result.res);
                         response.say(result.say);
                         response.reprompt(result.say);
                         response.card('Dashboard !', result.say);
@@ -115,12 +116,19 @@ exports.DashboardHandler = {
                         webpush.setVapidDetails('mailto:axel.reliefapps@gmail.com', Constants.PUBLICVAPIDKEY, Constants.PRIVATEVAPIDKEY);
                         const payload = JSON.stringify({
                             title: "Your dashboard is ready",
-                            message: "Go to the site to see the data"
+                            message: "Go to the site to see the data",
+                            url: "http://localhost:3630/"
                         });
                         webpush.sendNotification(Constants.SUBSCRIPTION, payload)
                             .catch(error => {
                                 console.error(error.stack);
                             });
+
+                        if (column) {
+                            Utils.emitFocusDash(userId, column, country, result.res);
+                        } else {
+                            Utils.emitNewDash(userId, country, result.res);
+                        }
                         return response;
                     },
                     (error) => {
