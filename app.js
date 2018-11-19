@@ -6,6 +6,7 @@ const Constants = require('./alexa/src/Constants').Constants;
 var PORT = process.env.PORT || 12113;
 var app = express();
 
+app.use(cors());
 // You choose here what will be the endpoint for Alexa. If empty it will be the root: '/'
 var alexaApp = new alexa.app("/alexa");
 alexaApp.express({
@@ -22,7 +23,6 @@ alexaApp.express({
 });
 
 app.use(require('body-parser').json());
-app.use(cors());
 app.post('/subscribe', (req, res) => {
     Constants.SUBSCRIPTION = req.body;
     res.status(201).json({data: { success: true }});

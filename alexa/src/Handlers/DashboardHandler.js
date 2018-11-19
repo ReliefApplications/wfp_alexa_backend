@@ -26,7 +26,6 @@ exports.DashboardHandler = {
             let userId = request.userId;
             let column = request.slots.column.value;
 
-
             let speechOutput = "";
             if (wfpcountrySlotRaw === undefined) {
                 speechOutput = "Here is the home page."
