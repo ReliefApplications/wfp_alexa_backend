@@ -14,5 +14,13 @@ exports.Constants = {
 
   PUBLICVAPIDKEY : process.env.PUBLIC_VAPID_KEY,
 
-  PRIVATEVAPIDKEY: process.env.PRIVATE_VAPID_KEY
-};
+  PRIVATEVAPIDKEY: process.env.PRIVATE_VAPID_KEY,
+
+  AWS_SMTP_USERNAME : process.env.AWS_SMTP_USERNAME,
+
+  AWS_SMTP_PASSWORD: process.env.AWS_SMTP_PASSWORD,
+
+  SMTP_HOST: 'email-smtp.eu-west-1.amazonaws.com',
+
+  EMAIL_SENDER: 'support@emalsys.org'
+}

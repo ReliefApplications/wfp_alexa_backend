@@ -6,7 +6,8 @@ exports.DashboardHandler = {
     'FocusDashboard':
     // This is triggered when a user ask for some data to be focused in the dashboard
         function(request, response) {
-            let column = request.slots.column.value;
+            let column = request.slots.column.resolution(0) ?
+                request.slots.column.resolution(0).first().name : undefined;
             let userId = request.userId;
 
             let speechOutput = "The data is now focused";
@@ -24,7 +25,8 @@ exports.DashboardHandler = {
             let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
                 request.slots.wfpcountry.resolution(0).first().name : undefined;
             let userId = request.userId;
-            let column = request.slots.column.value;
+            let column = request.slots.column.resolution(0) ?
+                request.slots.column.resolution(0).first().name : undefined;
 
             let speechOutput = "";
             if (wfpcountrySlotRaw === undefined) {
