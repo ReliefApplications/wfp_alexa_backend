@@ -4,13 +4,22 @@
   "private": true,
   "dependencies": {
     "alexa-app": "^4.2.2",
+    "aws-sdk": "latest",
     "babyparse": "^0.4.6",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
     "dotenv": "^6.1.0",
     "express": "^4.16.3",
+    "express-static": "^1.2.6",
+    "nodemailer": "^4.7.0",
+    "nodemailer-smtp-transport": "^2.7.4",
+    "nodemailer-ses-transport": "^1.5.1",
+    "node-ses": "^2.1.0",
     "request": "^2.88.0",
     "socket.io": "^2.1.1",
     "socket.io-client": "^2.1.1",
-    "ssml-builder": "^0.4.3"
+    "ssml-builder": "^0.4.3",
+    "web-push": "^3.3.3"
   },
   "description": "The .json of the Alexa skills kit is saved in vui.json.",
   "main": "index.js",
@@ -21,7 +30,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "node -r dotenv/config app.js"
   },
   "repository": {
     "type": "git",

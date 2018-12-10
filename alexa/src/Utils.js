@@ -2,8 +2,7 @@ const Baby = require('babyparse');
 const request = require('request');
 const Constants = require('./Constants').Constants;
 const io = require('socket.io-client');
-const socket = io.connect('http://217.70.189.97:12112');
-// const webpush = require("web-push");
+const socket = io.connect('https://wfp-alexa-socket.test.humanitarian.tech/');
 
 exports.Utils = {
     /**
@@ -14,9 +13,10 @@ exports.Utils = {
                         we need the key for the file we will fetch into.
                         You can find it between de slashes after "d" and before "edit"
      * @param callback function, This function will be executed before returning the value
+     * @param sheetname string, Since a CSV export is done on only one sheet, we can specify the sheetname
      */
-    requestGSheet: function (filekey, callback) {
-        let uriRequest = Constants.ENDPOINTS.googleEndPoint + filekey + Constants.ENDPOINTS.googleSheetEndUrl;
+    requestGSheet: function (filekey, callback, sheetname) {
+        let uriRequest = Constants.ENDPOINTS.googleEndPoint + filekey + Constants.ENDPOINTS.googleSheetEndUrl + (sheetname ? sheetname : '');
         return new Promise((resolve, reject) => {
             request(
                 {uri: uriRequest},
@@ -68,41 +68,15 @@ exports.Utils = {
     emitNewDash: function(userId, country, data) {
         socket.open();
         socket.emit('newDashboard', userId, country, JSON.stringify(data));
-        // webpush.setVapidDetails(
-        //     "mailto:axel.reliefapps@gmail.com",
-        //     process.env.PUBLIC_VAPID_KEY,
-        //     process.env.PRIVATE_VAPID_KEY
-        // );
-        // request(
-        //     {
-        //         method: "post",
-        //         uri: uriRequest,
-        //         body: data,
-        //         json: true,
-        //         headers: {'content-type': 'application/json'}
-        //     },
-        //     ((err, data) => {
-        //         if(err !== null){
-        //             console.error(err);
-        //         }
-        //         else {
-        //             console.log('Write successful !', data);
-        //         }
-        //     }));
-        // pushIntervalID = setInterval(() => {
-        //     webpush.sendNotification(subscription, JSON.stringify(testData))
-        //         .catch(() => clearInterval(pushIntervalID))
-        //     }, 30000)
-        // })
     },
     /**
      * This function is used to send the focus to the dashboard
      * @param userId string, Each user has a dashboard so only the user asking should see his dashboard change.
      * @param number number, number of people
      */
-    emitFocusDash: function(userId, number) {
+    emitFocusDash: function(userId, column, country, data) {
         socket.open();
-        socket.emit('focusDashboard', userId, number);
+        socket.emit('focusDashboard', userId, column, country, JSON.stringify(data));
     },
     /**
      * This function is used in order to generate a random numer in order to choose which answer Alexa will say.

@@ -23,7 +23,7 @@ exports.handler = function (alexaApp) {
     });
 
     alexaApp.intent("ShowDashboard", function(request, response) {
-        return CoreHandler.ShowDashboard(request, response);
+        return DashboardHandler.ShowDashboard(request, response);
     });
 
     alexaApp.intent("GetFoodnCashDistribution", function(request, response) {
@@ -36,6 +36,23 @@ exports.handler = function (alexaApp) {
 
     alexaApp.intent("GetBeneficiaries", function(request, response) {
         return BeneficiaryHandler.GetBeneficiaries(request, response);
+    });
+
+    alexaApp.intent("GetBeneficiariesOver", function(request, response) {
+        return BeneficiaryHandler.GetBeneficiariesOver(request, response);
+    });
+
+    alexaApp.intent("GetBeneficiariesUnder", function(request, response) {
+        return BeneficiaryHandler.GetBeneficiariesUnder(request, response);
+    });
+
+    alexaApp.intent("GetBeneficiariesBetween", function(request, response) {
+        return BeneficiaryHandler.GetBeneficiariesBetween(request, response);
+    });
+
+
+    alexaApp.intent("RatioCalculation", function(request, response) {
+        return BeneficiaryHandler.RatioCalculation(request, response);
     });
 
     alexaApp.intent("FocusDashboard", function(request, response) {

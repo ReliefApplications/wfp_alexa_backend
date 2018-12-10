@@ -20,11 +20,10 @@ exports.BeneficiaryHandler = {
                 Utils.requestGSheet('1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ', (results) => {
                     let values = results.data;
                     speechOutput = "";
-                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
-                        wfpcountrySlotRaw = " globally";
-                        values = results.data;
-                    }
-                    else {
+                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia" || !wfpcountrySlotRaw) {
+                            wfpcountrySlotRaw = " in Asia";
+                            values = results.data;
+                    } else if (wfpcountrySlotRaw) {
                         values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
                         wfpcountrySlotRaw = " in " + wfpcountrySlotRaw;
                     }
@@ -33,10 +32,10 @@ exports.BeneficiaryHandler = {
                     if (timeframeSlotRaw) {
                         switch (timeframeSlotRaw.toLowerCase()) {
                             case 'actual':
-                                columnNamePrefix = "Actual ";
+                                columnNamePrefix = "Actual";
                                 break;
                             case 'planned':
-                                columnNamePrefix = "Planned ";
+                                columnNamePrefix = "Planned";
                                 break;
                         }
                     }
@@ -51,40 +50,75 @@ exports.BeneficiaryHandler = {
                                 break;
                         }
                         if (!columnNamePrefix) {
-                            console.log(displayedValue, "Planned " + columnNameSuffix);
                             displayedValue += Utils.calculateSum(values, "Planned " + columnNameSuffix);
-                            console.log(displayedValue, "Actual " + columnNameSuffix);
                             displayedValue  += Utils.calculateSum(values, "Actual " + columnNameSuffix);
+                            speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
+                                + displayedValue + (unitSlotRaw === "food" ?
+                                    ((unitInputRaw.includes("food")) ?
+                                        " tons of food "
+                                        : " metric tons of " +
+                                        (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities "))
+                                    : " USD of cash and vouchers ")
+                                + (residenceStatusSlotRaw ? " to " + residenceStatusSlotRaw : '') + wfpcountrySlotRaw;
                         }
                         else {
                             displayedValue  += Utils.calculateSum(values, columnNamePrefix + ' ' + columnNameSuffix);
+                            if (columnNamePrefix.toLowerCase() === "planned") {
+                                speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                    + (Utils.getPseudoRandomNumber(2) === 0 ? " will distribute " : " will hand out ")
+                                    + displayedValue + (unitSlotRaw === "food" ?
+                                        ((unitInputRaw.includes("food")) ?
+                                            " tons of food "
+                                            : " metric tons of " +
+                                            (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities "))
+                                        : " USD of cash and vouchers ")
+                                    + (residenceStatusSlotRaw ? " to " + residenceStatusSlotRaw : '') + wfpcountrySlotRaw;
+                            }
+                            else {
+                                speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                    + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
+                                    + displayedValue + (unitSlotRaw === "food" ?
+                                        ((unitInputRaw.includes("food")) ?
+                                            " tons of food "
+                                            : " metric tons of " +
+                                            (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities "))
+                                        : " USD of cash and vouchers ")
+                                    + (residenceStatusSlotRaw ? " to " + residenceStatusSlotRaw : '') + wfpcountrySlotRaw
+                                    + " until now.";
+                            }
                         }
-                        speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
-                            + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
-                            + displayedValue + (unitSlotRaw === "food" ?
-                                ((unitInputRaw.includes("food")) ?
-                                    " tons of food "
-                                    : " metric tons of " +
-                                    (Utils.getPseudoRandomNumber(2) === 0 ? " food " : " commodities "))
-                                : " USD of cash and vouchers ")
-                            + (residenceStatusSlotRaw ? " to " + residenceStatusSlotRaw : '') + wfpcountrySlotRaw;
                     }
                     else {
-                        columnNameSuffix = "CBT";
-                        displayedValue += Utils.calculateSum(values, "Planned " + columnNameSuffix);
-                        displayedValue += Utils.calculateSum(values, "Actual " + columnNameSuffix);
+                        speechOutput += "I do not know the total budget. " +
+                            Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)];
                         columnNameSuffix = "food";
-                        let displayedValue2 = Utils.calculateSum(values, "Planned " + columnNameSuffix);
-                        displayedValue2 += Utils.calculateSum(values, "Actual " + columnNameSuffix);
-                        speechOutput += "I do not know the total budget. We handed out " + displayedValue2
-                            + " tons of food and distributed " + displayedValue + " USD of cash and vouchers";
+                        let columnNameSuffix2 = "CBT";
+                        let displayedValue2 = 0;
+                        if (!columnNamePrefix) {
+                            displayedValue += Utils.calculateSum(values, "Planned " + columnNameSuffix);
+                            displayedValue  += Utils.calculateSum(values, "Actual " + columnNameSuffix);
+                            speechOutput += (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
+                            + displayedValue + " tons of food and distributed ";
+                            displayedValue2 += Utils.calculateSum(values, "Planned " + columnNameSuffix2);
+                            displayedValue2  += Utils.calculateSum(values, "Actual " + columnNameSuffix2);
+                        }
+                        else {
+                            displayedValue  += Utils.calculateSum(values, columnNamePrefix + ' ' + columnNameSuffix);
+                            speechOutput += (columnNamePrefix.toLowerCase() === "planned" ?
+                                (Utils.getPseudoRandomNumber(2) === 0 ? " will distribute " : " will hand out ")
+                                : (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out "))
+                            + displayedValue + " tons of food and distributed ";
+                            displayedValue2  += Utils.calculateSum(values, columnNamePrefix + ' ' + columnNameSuffix);
+                        }
+                        speechOutput += displayedValue2 + " USD of cash and vouchers" + wfpcountrySlotRaw;
                     }
                     if (yearSlotRaw) {
                         if (yearSlotRaw === "2017") {
                             speechOutput += " in 2017."
                         }
                         else {
-                            speechOutput += " in 2017 since this is the only year I have data for."
+                            speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
                         }
                     }
                     resolve(speechOutput);
@@ -99,10 +133,79 @@ exports.BeneficiaryHandler = {
                     },
                     (error) => {
                         console.error('err', error);
-                        speechOutput = "There was an issue whith the request about the food and cash distribution";
+                        speechOutput = "There was an issue with the request about the food and cash distribution";
                         response.say(speechOutput);
                         response.reprompt(speechOutput);
                         response.card('GetFoodnCashDistribution error !', speechOutput);
+                        response.shouldEndSession(false);
+                        return response;
+                    });
+        }
+    ,
+    RatioCalculation:
+        function(request, response) {
+            // We go this deep to avoid checking for every synonyms in our functions and use the core value
+            let unitSlotRaw = request.slots.unit.resolution(0) ?
+                request.slots.unit.resolution(0).first().name : undefined;
+            let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
+                request.slots.wfpcountry.resolution(0).first().name : undefined;
+            let speechOutput = "No data";
+            return new Promise((resolve, reject) => {
+                Utils.requestGSheet('1WTPRmFwbBVhLFF3qRXUu6gUXx0PPOeM31cOD5Ih31YQ', (results) => {
+                    let values = results.data;
+                    speechOutput = "";
+                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
+                        wfpcountrySlotRaw = " for the Asia";
+                        values = results.data;
+                    }
+                    else {
+                        values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                        wfpcountrySlotRaw = " for " + wfpcountrySlotRaw;
+                    }
+                    if (unitSlotRaw) {
+                        let columnNameSuffix = "";
+                        switch (unitSlotRaw.toLowerCase()) {
+                            case 'cash':
+                                columnNameSuffix = "CBT";
+                                break;
+                            case 'food':
+                                columnNameSuffix = "food";
+                                break;
+                        }
+                        let displayedValue = Utils.calculateSum(values, "Actual " + columnNameSuffix) / Utils.calculateSum(values, "Planned " + columnNameSuffix) * 100;
+                        speechOutput += Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                            + (Utils.getPseudoRandomNumber(2) === 0 ? " distributed " : " handed out ")
+                            + Math.round(displayedValue) + "% of the planned" + (unitSlotRaw === "food" ?
+                                " food assistance "
+                                : " USD of cash and vouchers ") + wfpcountrySlotRaw;
+                    } else if (wfpcountrySlotRaw === " for the Asia") {
+                        let nbCountries = 0;
+                        let countries = [];
+                        values.filter((row) => {
+                            if (!countries.includes(row['Country'])) {
+                                countries.push(row['Country']);
+                                nbCountries++;
+                            }
+                        });
+                        let randomNumber = Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length);
+                        speechOutput += Constants.TEXTS.subjects[randomNumber]+" serve " + nbCountries + " countries in the Asia Pacific region";
+                    }
+                    resolve(speechOutput);
+                })
+            })
+                .then((result) => {
+                        response.say(result);
+                        response.reprompt(result);
+                        response.card('Food and cash ratio !', result);
+                        response.shouldEndSession(false);
+                        return response;
+                    },
+                    (error) => {
+                        console.error('err', error);
+                        speechOutput = "There was an issue with the request about the food and cash ratio";
+                        response.say(speechOutput);
+                        response.reprompt(speechOutput);
+                        response.card('RatioCalculation error !', speechOutput);
                         response.shouldEndSession(false);
                         return response;
                     });
@@ -123,11 +226,10 @@ exports.BeneficiaryHandler = {
                             break;
                     }
                     let values = results.data;
-                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
-                        wfpcountrySlotRaw = " globally";
-                        values = results.data;
-                    }
-                    else {
+                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia" || !wfpcountrySlotRaw) {
+                            wfpcountrySlotRaw = " in Asia";
+                            values = results.data;
+                    } else if (wfpcountrySlotRaw) {
                         values = values.filter(row => row['CO'] === wfpcountrySlotRaw);
                         wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
                     }
@@ -138,7 +240,7 @@ exports.BeneficiaryHandler = {
                             speechOutput += " in 2017."
                         }
                         else {
-                            speechOutput += " in 2017 since this is the only year I have data for."
+                            speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
                         }
                     }
                     resolve(speechOutput);
@@ -153,7 +255,7 @@ exports.BeneficiaryHandler = {
                     },
                     (error) => {
                         console.error('err', error);
-                        speechOutput = "There was an issue whith the request about the transfer data.";
+                        speechOutput = "There was an issue with the request about the transfer data.";
                         response.say(speechOutput);
                         response.reprompt(speechOutput);
                         response.card('Transfer Data error !', speechOutput);
@@ -176,8 +278,6 @@ exports.BeneficiaryHandler = {
             let unitSlotRaw = request.slots.unit.value;
             let typeSlotRaw = request.slots.type.resolution(0) ?
                 request.slots.type.resolution(0).first().name : undefined;
-            let ageFromSlotRaw = request.slots.age_from.value;
-            let ageToSlotRaw = request.slots.age_to.value;
             let yearSlotRaw = request.slots.year.value;
             let speechOutput = "No data";
             return new Promise((resolve, reject) => {
@@ -187,11 +287,10 @@ exports.BeneficiaryHandler = {
                         let headerName = "";
                         // We are filtering according to the country the user typed
                         let values = results.data;
-                        if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
-                            wfpcountrySlotRaw = " globally";
+                        if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia" || !wfpcountrySlotRaw) {
+                            wfpcountrySlotRaw = " in Asia";
                             values = results.data;
-                        }
-                        else {
+                        } else if (wfpcountrySlotRaw) {
                             values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
                             wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
                         }
@@ -213,71 +312,7 @@ exports.BeneficiaryHandler = {
                                 values = values.filter(row => row[headerName] === "Female");
                                 break;
                         }
-                        // Between
-                        if (ageFromSlotRaw && ageToSlotRaw) {
-                            if (ageFromSlotRaw > 18) {
-                                ageFromSlotRaw = 18;
-                                ageToSlotRaw = 200;
-                                values = values.filter(row => row["Age groups"] === adults);
-                            }
-                            else if (ageFromSlotRaw < 5 && ageToSlotRaw < 5) {
-                                ageFromSlotRaw = 0;
-                                ageToSlotRaw = 5;
-                                values = values.filter(row => row["Age groups"] === children);
-                            }
-                            else if (ageFromSlotRaw < 5 && ageToSlotRaw <= 18) {
-                                ageFromSlotRaw = 0;
-                                ageToSlotRaw = 18;
-                                values = values.filter(row => row["Age groups"] === children || row["Age groups"] === teenagers);
-                            }
-                            else if (ageFromSlotRaw < 5 && ageToSlotRaw > 18) {
-                                ageFromSlotRaw = 0;
-                                ageToSlotRaw = 200;
-                            }
-                            else if (ageFromSlotRaw <= 18 && ageToSlotRaw <= 18) {
-                                ageFromSlotRaw = 5;
-                                ageToSlotRaw = 18;
-                                values = values.filter(row => row["Age groups"] === teenagers);
-                            }
-                            else if (ageFromSlotRaw <= 18 && ageToSlotRaw > 18) {
-                                ageFromSlotRaw = 5;
-                                ageToSlotRaw = 200;
-                                values = values.filter(row =>  row["Age groups"] === teenagers || row["Age groups"] === adults);
-                            }
-                        }
-                        // Under
-                        else if (ageFromSlotRaw && !ageToSlotRaw) {
-                            if (ageFromSlotRaw <= 5) {
-                                ageFromSlotRaw = 5;
-                                values = values.filter(row => row["Age groups"] === children);
-                            }
-                            else if (ageFromSlotRaw <= 18) {
-                                ageFromSlotRaw = 18;
-                                values = values.filter(row => row["Age groups"] === children || row["Age groups"] === teenagers);
-                            }
-                            else {
-                                ageFromSlotRaw = 200;
-                            }
-                        }
-                        // Over
-                        else if (!ageFromSlotRaw && ageToSlotRaw) {
-                            if (ageToSlotRaw > 18) {
-                                ageToSlotRaw = 18;
-                                values = values.filter(row => row["Age groups"] === adults);
-                            }
-                            else if (ageToSlotRaw > 5) {
-                                ageToSlotRaw = 5;
-                                values = values.filter(row => row["Age groups"] === teenagers || row["Age groups"] === adults);
-                            }
-                            else {
-                                ageToSlotRaw = 0;
-                            }
-                        }
-                        console.log(values);
                         let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
-                        if (wfpcountrySlotRaw === "Asia") {
-                            wfpcountrySlotRaw = "globally";
-                        }
                         if (displayedValue === 0) {
                             speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
                                 + " did not distribute " + (unitSlotRaw ? "any " + unitSlotRaw : "something") + " to " + disaggregationDataSlotRaw + wfpcountrySlotRaw;
@@ -287,40 +322,16 @@ exports.BeneficiaryHandler = {
                                 case 0:
                                     speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
                                         + " distributed " + (unitSlotRaw ? unitSlotRaw : "")
-                                        + " to " + displayedValue + " " + disaggregationDataSlotRaw +
-                                        (ageFromSlotRaw !== undefined ?
-                                                (ageToSlotRaw !== undefined ?
-                                                    " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
-                                                    : " under " + ageFromSlotRaw + " years old")
-                                                : (ageToSlotRaw !== undefined ?
-                                                    " over " + ageToSlotRaw + " years old"
-                                                    : "")
-                                        )
+                                        + " to " + displayedValue + " " + disaggregationDataSlotRaw
                                         + wfpcountrySlotRaw;
                                     break;
                                 case 1:
                                     speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
-                                        (ageFromSlotRaw !== undefined ?
-                                                (ageToSlotRaw !== undefined ?
-                                                    " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
-                                                    : " under " + ageFromSlotRaw + " years old")
-                                                : (ageToSlotRaw !== undefined ?
-                                                    " over " + ageToSlotRaw + " years old"
-                                                    : "")
-                                        )
-                                        + " received " + (unitSlotRaw ? unitSlotRaw : "assistance") + wfpcountrySlotRaw;
+                                        " received " + (unitSlotRaw ? unitSlotRaw : "assistance") + wfpcountrySlotRaw;
                                     break;
                                 case 2:
                                     speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
-                                        (ageFromSlotRaw !== undefined ?
-                                                (ageToSlotRaw !== undefined ?
-                                                    " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
-                                                    : " under " + ageFromSlotRaw + " years old")
-                                                : (ageToSlotRaw !== undefined ?
-                                                    " over " + ageToSlotRaw + " years old"
-                                                    : "")
-                                        )
-                                        + " got " + (unitSlotRaw ? unitSlotRaw : " helped ") + wfpcountrySlotRaw;
+                                        " got " + (unitSlotRaw ? unitSlotRaw : " helped ") + wfpcountrySlotRaw;
                                     break;
                             }
                         }
@@ -329,7 +340,7 @@ exports.BeneficiaryHandler = {
                                 speechOutput += " in 2017."
                             }
                             else {
-                                speechOutput += " in 2017 since this is the only year I have data for."
+                                speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
                             }
                         }
                         resolve(speechOutput);
@@ -340,11 +351,10 @@ exports.BeneficiaryHandler = {
                         let columnName = "";
                         let values = results.data;
                         // We are filtering according to the country the user typed
-                        if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia") {
-                            wfpcountrySlotRaw = " globally";
+                        if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia" || !wfpcountrySlotRaw) {
+                            wfpcountrySlotRaw = " in Asia";
                             values = results.data;
-                        }
-                        else {
+                        } else if (wfpcountrySlotRaw) {
                             values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
                             wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
                         }
@@ -407,12 +417,11 @@ exports.BeneficiaryHandler = {
                             }
                         }
                         if (yearSlotRaw) {
-                            console.log(yearSlotRaw);
                             if (yearSlotRaw === "2017") {
                                 speechOutput += " in 2017."
                             }
                             else {
-                                speechOutput += " in 2017 since this is the only year I have data for."
+                                speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
                             }
                         }
                         resolve(speechOutput);
@@ -428,10 +437,401 @@ exports.BeneficiaryHandler = {
                     },
                     (error) => {
                         console.error('err', error);
-                        speechOutput = "There was an issue whith the request about the beneficiaries.";
+                        speechOutput = "There was an issue with the request about the beneficiaries.";
                         response.say(speechOutput);
                         response.reprompt(speechOutput);
                         response.card('Transfer Data error !', speechOutput);
+                        response.shouldEndSession(false);
+                    });
+        }
+    ,
+    GetBeneficiariesOver:
+        function(request, response) {
+            const adults = "Adults (>18)";
+            const teenagers = "Children (5-18)";
+            const children = "Children (< 5)";
+            let disaggregationDataSlotRaw = request.slots.disaggregationData.resolution(0) ?
+                request.slots.disaggregationData.resolution(0).first().name : undefined;
+            let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
+                request.slots.wfpcountry.resolution(0).first().name : undefined;
+            let unitSlotRaw = request.slots.unit.value;
+            let ageToSlotRaw = request.slots.age_to.value;
+            let yearSlotRaw = request.slots.year.value;
+            let speechOutput = "No data";
+            return new Promise((resolve, reject) => {
+                // If the user want an information about the sex or the age groups
+                Utils.requestGSheet('1l-G2-g8XrnmiD9RMzqq0ELMxNHjNKov7wGW5CqxrHcU', (results) => {
+                    let headerName = "";
+                    // We are filtering according to the country the user typed
+                    let values = results.data;
+                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia" || !wfpcountrySlotRaw) {
+                        wfpcountrySlotRaw = " in Asia";
+                        values = results.data;
+                    } else if (wfpcountrySlotRaw) {
+                        values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                        wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
+                    }
+                    switch (disaggregationDataSlotRaw.toLowerCase()) {
+                        case 'children':
+                            headerName="Age groups";
+                            values = values.filter(row => row[headerName] === teenagers || row[headerName] === children);
+                            break;
+                        case 'adults':
+                            headerName="Age groups";
+                            values = values.filter(row => row[headerName] === adults);
+                            break;
+                        case 'male':
+                            headerName="Sex";
+                            values = values.filter(row => row[headerName] === "Male");
+                            break;
+                        case 'female':
+                            headerName="Sex";
+                            values = values.filter(row => row[headerName] === "Female");
+                            break;
+                    }
+                    if (ageToSlotRaw) {
+                        if (ageToSlotRaw > 18) {
+                            ageToSlotRaw = 18;
+                            values = values.filter(row => row["Age groups"] === adults);
+                        }
+                        else if (ageToSlotRaw > 5) {
+                            ageToSlotRaw = 5;
+                            values = values.filter(row => row["Age groups"] === teenagers || row["Age groups"] === adults);
+                        }
+                        else {
+                            ageToSlotRaw = 0;
+                        }
+                    }
+                    let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
+                    if (displayedValue === 0) {
+                        speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                            + " did not distribute " + (unitSlotRaw ? "any " + unitSlotRaw : "something") + " to " + disaggregationDataSlotRaw + wfpcountrySlotRaw;
+                    }
+                    else {
+                        switch(Utils.getPseudoRandomNumber(3)) {
+                            case 0:
+                                speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                    + " distributed " + (unitSlotRaw ? unitSlotRaw : "")
+                                    + " to " + displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageToSlotRaw !== undefined ?
+                                        " over " + ageToSlotRaw + " years old"
+                                        : ""
+                                    )
+                                    + wfpcountrySlotRaw;
+                                break;
+                            case 1:
+                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageToSlotRaw !== undefined ?
+                                        " over " + ageToSlotRaw + " years old"
+                                        : ""
+                                    )
+                                    + " received " + (unitSlotRaw ? unitSlotRaw : "assistance") + wfpcountrySlotRaw;
+                                break;
+                            case 2:
+                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageToSlotRaw !== undefined ?
+                                        " over " + ageToSlotRaw + " years old"
+                                        : ""
+                                    )
+                                    + " got " + (unitSlotRaw ? unitSlotRaw : " helped ") + wfpcountrySlotRaw;
+                                break;
+                        }
+                    }
+                    if (yearSlotRaw) {
+                        if (yearSlotRaw === "2017") {
+                            speechOutput += " in 2017."
+                        }
+                        else {
+                            speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
+                        }
+                    }
+                    resolve(speechOutput);
+                });
+            })
+                .then((result) => {
+                        response.say(result);
+                        response.reprompt(result);
+                        response.card('Beneficiaries over !', result);
+                        response.shouldEndSession(false);
+                        return response;
+                    },
+                    (error) => {
+                        console.error('err', error);
+                        speechOutput = "There was an issue with the request about the beneficiaries over a certain age.";
+                        response.say(speechOutput);
+                        response.reprompt(speechOutput);
+                        response.card('Beneficiaries over error !', speechOutput);
+                        response.shouldEndSession(false);
+                    });
+        }
+    ,
+    GetBeneficiariesUnder:
+        function(request, response) {
+            const adults = "Adults (>18)";
+            const teenagers = "Children (5-18)";
+            const children = "Children (< 5)";
+            let disaggregationDataSlotRaw = request.slots.disaggregationData.resolution(0) ?
+                request.slots.disaggregationData.resolution(0).first().name : undefined;
+            let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
+                request.slots.wfpcountry.resolution(0).first().name : undefined;
+            let unitSlotRaw = request.slots.unit.value;
+            let ageFromSlotRaw = request.slots.age_from.value;
+            let yearSlotRaw = request.slots.year.value;
+            let speechOutput = "No data";
+            return new Promise((resolve, reject) => {
+                // If the user want an information about the sex or the age groups
+                Utils.requestGSheet('1l-G2-g8XrnmiD9RMzqq0ELMxNHjNKov7wGW5CqxrHcU', (results) => {
+                    let headerName = "";
+                    // We are filtering according to the country the user typed
+                    let values = results.data;
+                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia" || !wfpcountrySlotRaw) {
+                        wfpcountrySlotRaw = " in Asia";
+                        values = results.data;
+                    } else if (wfpcountrySlotRaw) {
+                        values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                        wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
+                    }
+                    switch (disaggregationDataSlotRaw.toLowerCase()) {
+                        case 'children':
+                            headerName="Age groups";
+                            values = values.filter(row => row[headerName] === teenagers || row[headerName] === children);
+                            break;
+                        case 'adults':
+                            headerName="Age groups";
+                            values = values.filter(row => row[headerName] === adults);
+                            break;
+                        case 'male':
+                            headerName="Sex";
+                            values = values.filter(row => row[headerName] === "Male");
+                            break;
+                        case 'female':
+                            headerName="Sex";
+                            values = values.filter(row => row[headerName] === "Female");
+                            break;
+                    }
+                    if (ageFromSlotRaw) {
+                        if (ageFromSlotRaw <= 5) {
+                            ageFromSlotRaw = 5;
+                            values = values.filter(row => row["Age groups"] === children);
+                        }
+                        else if (ageFromSlotRaw <= 18) {
+                            ageFromSlotRaw = 18;
+                            values = values.filter(row => row["Age groups"] === children || row["Age groups"] === teenagers);
+                        }
+                        else {
+                            ageFromSlotRaw = 200;
+                        }
+                    }
+                    let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
+                    if (displayedValue === 0) {
+                        speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                            + " did not distribute " + (unitSlotRaw ? "any " + unitSlotRaw : "something") + " to " + disaggregationDataSlotRaw + wfpcountrySlotRaw;
+                    }
+                    else {
+                        switch(Utils.getPseudoRandomNumber(3)) {
+                            case 0:
+                                speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                    + " distributed " + (unitSlotRaw ? unitSlotRaw : "")
+                                    + " to " + displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageFromSlotRaw !== undefined ?
+                                        " under " + ageFromSlotRaw + " years old"
+                                        : ""
+                                    )
+                                    + wfpcountrySlotRaw;
+                                break;
+                            case 1:
+                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageFromSlotRaw !== undefined ?
+                                        " under " + ageFromSlotRaw + " years old"
+                                        : ""
+                                    )
+                                    + " received " + (unitSlotRaw ? unitSlotRaw : "assistance") + wfpcountrySlotRaw;
+                                break;
+                            case 2:
+                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageFromSlotRaw !== undefined ?
+                                        " under " + ageFromSlotRaw + " years old"
+                                        : ""
+                                    )
+                                    + " got " + (unitSlotRaw ? unitSlotRaw : " helped ") + wfpcountrySlotRaw;
+                                break;
+                        }
+                    }
+                    if (yearSlotRaw) {
+                        if (yearSlotRaw === "2017") {
+                            speechOutput += " in 2017."
+                        }
+                        else {
+                            speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
+                        }
+                    }
+                    resolve(speechOutput);
+                });
+            })
+                .then((result) => {
+                        response.say(result);
+                        response.reprompt(result);
+                        response.card('Beneficiaries over !', result);
+                        response.shouldEndSession(false);
+                        return response;
+                    },
+                    (error) => {
+                        console.error('err', error);
+                        speechOutput = "There was an issue with the request about the beneficiaries over a certain age.";
+                        response.say(speechOutput);
+                        response.reprompt(speechOutput);
+                        response.card('Beneficiaries over error !', speechOutput);
+                        response.shouldEndSession(false);
+                    });
+        }
+    ,
+    GetBeneficiariesBetween:
+        function(request, response) {
+            const adults = "Adults (>18)";
+            const teenagers = "Children (5-18)";
+            const children = "Children (< 5)";
+            let disaggregationDataSlotRaw = request.slots.disaggregationData.resolution(0) ?
+                request.slots.disaggregationData.resolution(0).first().name : undefined;
+            let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
+                request.slots.wfpcountry.resolution(0).first().name : undefined;
+            let unitSlotRaw = request.slots.unit.value;
+            let ageToSlotRaw = request.slots.age_to.value;
+            let ageFromSlotRaw = request.slots.age_from.value;
+            let yearSlotRaw = request.slots.year.value;
+            let speechOutput = "No data";
+            return new Promise((resolve, reject) => {
+                // If the user want an information about the sex or the age groups
+                Utils.requestGSheet('1l-G2-g8XrnmiD9RMzqq0ELMxNHjNKov7wGW5CqxrHcU', (results) => {
+                    let headerName = "";
+                    // We are filtering according to the country the user typed
+                    let values = results.data;
+                    if (wfpcountrySlotRaw && wfpcountrySlotRaw.toLowerCase() === "asia" || !wfpcountrySlotRaw) {
+                        wfpcountrySlotRaw = " in Asia";
+                        values = results.data;
+                    } else if (wfpcountrySlotRaw) {
+                        values = values.filter(row => row['Country'] === wfpcountrySlotRaw);
+                        wfpcountrySlotRaw =  " in " + wfpcountrySlotRaw;
+                    }
+                    switch (disaggregationDataSlotRaw.toLowerCase()) {
+                        case 'children':
+                            headerName="Age groups";
+                            values = values.filter(row => row[headerName] === teenagers || row[headerName] === children);
+                            break;
+                        case 'adults':
+                            headerName="Age groups";
+                            values = values.filter(row => row[headerName] === adults);
+                            break;
+                        case 'male':
+                            headerName="Sex";
+                            values = values.filter(row => row[headerName] === "Male");
+                            break;
+                        case 'female':
+                            headerName="Sex";
+                            values = values.filter(row => row[headerName] === "Female");
+                            break;
+                    }
+                    if (ageFromSlotRaw && ageToSlotRaw) {
+                        if (ageFromSlotRaw > 18) {
+                            ageFromSlotRaw = 18;
+                            ageToSlotRaw = 200;
+                            values = values.filter(row => row["Age groups"] === adults);
+                        }
+                        else if (ageFromSlotRaw < 5 && ageToSlotRaw < 5) {
+                            ageFromSlotRaw = 0;
+                            ageToSlotRaw = 5;
+                            values = values.filter(row => row["Age groups"] === children);
+                        }
+                        else if (ageFromSlotRaw < 5 && ageToSlotRaw <= 18) {
+                            ageFromSlotRaw = 0;
+                            ageToSlotRaw = 18;
+                            values = values.filter(row => row["Age groups"] === children || row["Age groups"] === teenagers);
+                        }
+                        else if (ageFromSlotRaw < 5 && ageToSlotRaw > 18) {
+                            ageFromSlotRaw = 0;
+                            ageToSlotRaw = 200;
+                        }
+                        else if (ageFromSlotRaw <= 18 && ageToSlotRaw <= 18) {
+                            ageFromSlotRaw = 5;
+                            ageToSlotRaw = 18;
+                            values = values.filter(row => row["Age groups"] === teenagers);
+                        }
+                        else if (ageFromSlotRaw <= 18 && ageToSlotRaw > 18) {
+                            ageFromSlotRaw = 5;
+                            ageToSlotRaw = 200;
+                            values = values.filter(row =>  row["Age groups"] === teenagers || row["Age groups"] === adults);
+                        }
+                    }
+                    let displayedValue = Utils.calculateSum(values, 'Number of beneficiaries');
+                    if (displayedValue === 0) {
+                        speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                            + " did not distribute " + (unitSlotRaw ? "any " + unitSlotRaw : "something") + " to " + disaggregationDataSlotRaw + wfpcountrySlotRaw;
+                    }
+                    else {
+                        switch(Utils.getPseudoRandomNumber(3)) {
+                            case 0:
+                                speechOutput = Constants.TEXTS.subjects[Utils.getPseudoRandomNumber(Constants.TEXTS.subjects.length)]
+                                    + " distributed " + (unitSlotRaw ? unitSlotRaw : "")
+                                    + " to " + displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageFromSlotRaw !== undefined ?
+                                            (ageToSlotRaw !== undefined ?
+                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
+                                                : " under " + ageFromSlotRaw + " years old")
+                                            : (ageToSlotRaw !== undefined ?
+                                                " over " + ageToSlotRaw + " years old"
+                                                : "")
+                                    )
+                                    + wfpcountrySlotRaw;
+                                break;
+                            case 1:
+                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageFromSlotRaw !== undefined ?
+                                            (ageToSlotRaw !== undefined ?
+                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
+                                                : " under " + ageFromSlotRaw + " years old")
+                                            : (ageToSlotRaw !== undefined ?
+                                                " over " + ageToSlotRaw + " years old"
+                                                : "")
+                                    )
+                                    + " received " + (unitSlotRaw ? unitSlotRaw : "assistance") + wfpcountrySlotRaw;
+                                break;
+                            case 2:
+                                speechOutput = displayedValue + " " + disaggregationDataSlotRaw +
+                                    (ageFromSlotRaw !== undefined ?
+                                            (ageToSlotRaw !== undefined ?
+                                                " from " + ageFromSlotRaw + " to " + ageToSlotRaw + " years old"
+                                                : " under " + ageFromSlotRaw + " years old")
+                                            : (ageToSlotRaw !== undefined ?
+                                                " over " + ageToSlotRaw + " years old"
+                                                : "")
+                                    )
+                                    + " got " + (unitSlotRaw ? unitSlotRaw : " helped ") + wfpcountrySlotRaw;
+                                break;
+                        }
+                    }
+                    if (yearSlotRaw) {
+                        if (yearSlotRaw === "2017") {
+                            speechOutput += " in 2017."
+                        }
+                        else {
+                            speechOutput = "I do not have data for "+ yearSlotRaw + ". " + speechOutput + " in 2017";
+                        }
+                    }
+                    resolve(speechOutput);
+                });
+            })
+                .then((result) => {
+                        response.say(result);
+                        response.reprompt(result);
+                        response.card('Beneficiaries over !', result);
+                        response.shouldEndSession(false);
+                        return response;
+                    },
+                    (error) => {
+                        console.error('err', error);
+                        speechOutput = "There was an issue with the request about the beneficiaries over a certain age.";
+                        response.say(speechOutput);
+                        response.reprompt(speechOutput);
+                        response.card('Beneficiaries over error !', speechOutput);
                         response.shouldEndSession(false);
                     });
         }

@@ -3,15 +3,13 @@ const io = require('socket.io')();
 io.on('connection', (client) => {
         console.log('connected');
         client.on('newDashboard', (userId, country, data) => {
-                console.log('newDashboard', country);
                 client.emit('dashboardModified');
                 client.broadcast.emit('dashboardChanges', userId, country, data);
                 client.disconnect(true);
         });
-        client.on('focusDashboard', (userId, number) => {
-                console.log('dashboardFocus', number);
+        client.on('focusDashboard', (userId, column, country, data) => {
                 client.emit('dashboardModified');
-                client.broadcast.emit('dashboardFocus', userId, number);
+                client.broadcast.emit('dashboardFocus', userId, column, country, data);
                 client.disconnect(true);
         });
         client.on('error', function (err) {
