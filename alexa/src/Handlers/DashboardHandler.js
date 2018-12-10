@@ -118,7 +118,7 @@ exports.DashboardHandler = {
                         const payload = JSON.stringify({
                             title: "Your dashboard is ready",
                             message: "Go to the site to see the data",
-                            url: "http://localhost:3630/"
+                            url: "https://wfp-alexa-front.test.humanitarian.tech/"
                         });
                         webpush.sendNotification(Constants.SUBSCRIPTION, payload)
                             .catch(error => {
