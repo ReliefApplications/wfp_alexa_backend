@@ -65,10 +65,28 @@ This project works with Docker.
 
 To start coding in a safe environment, please launch the docker container with the following command:
 ```
-sudo docker-compose up devapp
+$ sudo docker-compose up devapp
 ```
 
 If it's the first time, please run 
 ```
-sudo ./docker-build.sh
+$ sudo ./docker-build.sh
+```
+
+## .env file
+Don't forget to create the .env file.
+It will at least need the public and private VAPID keys for the push notification and the AWS SMTP parameters.
+
+You can generate VAPID credentials [here](https://web-push-codelab.glitch.me/) or use this method : 
+
+```
+$ npm install -g web-push
+$ web-push generate-vapid-keys
+```
+
+```
+PUBLIC_VAPID_KEY=""
+PRIVATE_VAPID_KEY=""
+AWS_SMTP_USERNAME=""
+AWS_SMTP_PASSWORD=""
 ```
