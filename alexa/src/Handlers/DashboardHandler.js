@@ -6,12 +6,12 @@ exports.DashboardHandler = {
     'FocusDashboard':
     // This is triggered when a user ask for some data to be focused in the dashboard
         function(request, response) {
+            let accessToken = request.context.System.user.accessToken;
             let column = request.slots.column.resolution(0) ?
                 request.slots.column.resolution(0).first().name : undefined;
-            let userId = request.userId;
 
             let speechOutput = "The data is now focused";
-            Utils.emitFocusDash(userId, column, "", {});
+            Utils.emitFocusDash(accessToken, column, "", {});
             response.say(speechOutput);
             response.reprompt(speechOutput);
             response.card('Dashboard !', speechOutput);
@@ -22,9 +22,9 @@ exports.DashboardHandler = {
     'ShowDashboard':
     // This is triggered when a user ask for some data to be displayed
         function(request, response) {
+            let accessToken = request.context.System.user.accessToken;
             let wfpcountrySlotRaw = request.slots.wfpcountry.resolution(0) ?
                 request.slots.wfpcountry.resolution(0).first().name : undefined;
-            let userId = request.userId;
             let column = request.slots.column.resolution(0) ?
                 request.slots.column.resolution(0).first().name : undefined;
 
@@ -126,9 +126,9 @@ exports.DashboardHandler = {
                             });
 
                         if (column) {
-                            Utils.emitFocusDash(userId, column, country, result.res);
+                            Utils.emitFocusDash(accessToken, column, country, result.res);
                         } else {
-                            Utils.emitNewDash(userId, country, result.res);
+                            Utils.emitNewDash(accessToken, country, result.res);
                         }
                         return response;
                     },

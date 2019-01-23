@@ -61,20 +61,43 @@ exports.Utils = {
     },
     /**
      * This function is used to send the data to the dashboard
-     * @param userId string, Each user has a dashboard so only the user asking should see his dashboard change.
+     * @param accessToken string, Each user has a dashboard so only the user asking should see his dashboard change.
      * @param country string, Country displayed
      * @param data Object, data that will be used in the dashboard
      */
-    emitNewDash: function(userId, country, data) {
+    emitNewDash: async function(accessToken, country, data) {
+        let userId = await new Promise((resolve, reject) => {
+            request(
+                {uri: "https://api.amazon.com/user/profile?access_token=" + accessToken},
+                ((err, data) => {
+                    resolve(JSON.parse(data.body).user_id);
+                    if(err !== null){
+                        console.error(err);
+                        reject(null);
+                    }
+                }));
+        });
         socket.open();
         socket.emit('newDashboard', userId, country, JSON.stringify(data));
     },
     /**
      * This function is used to send the focus to the dashboard
-     * @param userId string, Each user has a dashboard so only the user asking should see his dashboard change.
-     * @param number number, number of people
+     * @param accessToken string, Each user has a dashboard so only the user asking should see his dashboard change.
+     * @param country string, Country displayed
+     * @param data Object, data that will be used in the dashboard
      */
-    emitFocusDash: function(userId, column, country, data) {
+    emitFocusDash: async function(accessToken, column, country, data) {
+        let userId = await new Promise((resolve, reject) => {
+            request(
+                {uri: "https://api.amazon.com/user/profile?access_token=" + accessToken},
+                ((err, data) => {
+                    resolve(JSON.parse(data.body).user_id);
+                    if(err !== null){
+                        console.error(err);
+                        reject(null);
+                    }
+                }));
+        });
         socket.open();
         socket.emit('focusDashboard', userId, column, country, JSON.stringify(data));
     },
